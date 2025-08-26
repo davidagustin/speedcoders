@@ -15,25 +15,25 @@ export default function HomePage() {
 						<div className="flex items-center space-x-4">
 							<Link
 								href="/dashboard"
-								className="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium"
+								className="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium cursor-pointer"
 							>
 								Dashboard
 							</Link>
 							<Link
 								href="/problems"
-								className="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium"
+								className="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium cursor-pointer"
 							>
 								Problems
 							</Link>
 							<Link
 								href="/quiz"
-								className="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium"
+								className="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium cursor-pointer"
 							>
 								Quiz
 							</Link>
 							<Link
 								href="/auth/login"
-								className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium"
+								className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium cursor-pointer"
 							>
 								Sign In
 							</Link>
@@ -56,14 +56,14 @@ export default function HomePage() {
 					<div className="flex flex-col sm:flex-row gap-4 justify-center">
 						<Link
 							href="/dashboard"
-							className="inline-flex items-center px-8 py-4 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg text-lg transition-colors"
+							className="inline-flex items-center px-8 py-4 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg text-lg transition-colors cursor-pointer"
 						>
 							Start Learning Now
 							<ArrowRightIcon className="ml-2 h-5 w-5" />
 						</Link>
 						<Link
 							href="/problems"
-							className="inline-flex items-center px-8 py-4 bg-white hover:bg-gray-50 text-gray-900 font-semibold rounded-lg text-lg border border-gray-300 transition-colors"
+							className="inline-flex items-center px-8 py-4 bg-white hover:bg-gray-50 text-gray-900 font-semibold rounded-lg text-lg border border-gray-300 transition-colors cursor-pointer"
 						>
 							Browse Problems
 						</Link>
@@ -116,28 +116,28 @@ export default function HomePage() {
 					<div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
 						<Link
 							href="/quiz"
-							className="bg-white p-6 rounded-lg shadow-sm hover:shadow-md transition-shadow"
+							className="bg-white p-6 rounded-lg shadow-sm hover:shadow-md transition-shadow cursor-pointer"
 						>
 							<h3 className="text-lg font-semibold text-gray-900 mb-2">Take a Quiz</h3>
 							<p className="text-gray-600">Test your knowledge with interactive quizzes</p>
 						</Link>
 						<Link
 							href="/problems"
-							className="bg-white p-6 rounded-lg shadow-sm hover:shadow-md transition-shadow"
+							className="bg-white p-6 rounded-lg shadow-sm hover:shadow-md transition-shadow cursor-pointer"
 						>
 							<h3 className="text-lg font-semibold text-gray-900 mb-2">Solve Problems</h3>
 							<p className="text-gray-600">Practice with curated coding problems</p>
 						</Link>
 						<Link
 							href="/leetcode"
-							className="bg-white p-6 rounded-lg shadow-sm hover:shadow-md transition-shadow"
+							className="bg-white p-6 rounded-lg shadow-sm hover:shadow-md transition-shadow cursor-pointer"
 						>
 							<h3 className="text-lg font-semibold text-gray-900 mb-2">LeetCode Style</h3>
 							<p className="text-gray-600">Experience LeetCode-like problems</p>
 						</Link>
 						<Link
 							href="/dashboard"
-							className="bg-white p-6 rounded-lg shadow-sm hover:shadow-md transition-shadow"
+							className="bg-white p-6 rounded-lg shadow-sm hover:shadow-md transition-shadow cursor-pointer"
 						>
 							<h3 className="text-lg font-semibold text-gray-900 mb-2">View Dashboard</h3>
 							<p className="text-gray-600">See your progress and achievements</p>
@@ -158,13 +158,13 @@ export default function HomePage() {
 							Master algorithms and data structures with interactive learning
 						</p>
 						<div className="flex justify-center space-x-6">
-							<Link href="/auth/login" className="text-gray-400 hover:text-white">
+							<Link href="/auth/login" className="text-gray-400 hover:text-white cursor-pointer">
 								Sign In
 							</Link>
-							<Link href="/auth/register" className="text-gray-400 hover:text-white">
+							<Link href="/auth/register" className="text-gray-400 hover:text-white cursor-pointer">
 								Register
 							</Link>
-							<Link href="/dashboard" className="text-gray-400 hover:text-white">
+							<Link href="/dashboard" className="text-gray-400 hover:text-white cursor-pointer">
 								Dashboard
 							</Link>
 						</div>

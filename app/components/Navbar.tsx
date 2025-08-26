@@ -25,39 +25,50 @@ export function Navbar() {
 						<div className="ml-10 flex items-baseline space-x-4">
 							<Link
 								href="/dashboard"
-								className="text-gray-700 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium"
+								className="text-gray-700 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium cursor-pointer"
 							>
 								Dashboard
 							</Link>
 							<Link
 								href="/quiz"
-								className="text-gray-700 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium"
+								className="text-gray-700 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium cursor-pointer"
 							>
 								Quiz
 							</Link>
 							<Link
-								href="/contest"
-								className="text-gray-700 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium"
+								href="/problems"
+								className="text-gray-700 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium cursor-pointer"
 							>
-								Contest
+								Problems
 							</Link>
 							<Link
-								href="/battle"
-								className="text-gray-700 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium"
+								href="/leetcode"
+								className="text-gray-700 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium cursor-pointer"
 							>
-								Battle
-							</Link>
-							<Link
-								href="/performance"
-								className="text-gray-700 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium"
-							>
-								Analytics
+								LeetCode
 							</Link>
 							<Link
 								href="/achievements"
-								className="text-gray-700 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium"
+								className="text-gray-700 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium cursor-pointer"
 							>
 								Achievements
+							</Link>
+						</div>
+					</div>
+
+					<div className="hidden md:block">
+						<div className="flex items-center space-x-4">
+							<Link
+								href="/auth/login"
+								className="text-gray-700 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium"
+							>
+								Sign In
+							</Link>
+							<Link
+								href="/auth/signup"
+								className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium"
+							>
+								Sign Up
 							</Link>
 						</div>
 					</div>
@@ -91,37 +102,31 @@ export function Navbar() {
 					<div className="px-2 pt-2 pb-3 space-y-1 sm:px-3 bg-white border-t">
 						<Link
 							href="/dashboard"
-							className="block px-3 py-2 text-base font-medium text-gray-700 hover:text-gray-900"
+							className="block px-3 py-2 text-base font-medium text-gray-700 hover:text-gray-900 cursor-pointer"
 						>
 							Dashboard
 						</Link>
 						<Link
 							href="/quiz"
-							className="block px-3 py-2 text-base font-medium text-gray-700 hover:text-gray-900"
+							className="block px-3 py-2 text-base font-medium text-gray-700 hover:text-gray-900 cursor-pointer"
 						>
 							Quiz
 						</Link>
 						<Link
-							href="/contest"
-							className="block px-3 py-2 text-base font-medium text-gray-700 hover:text-gray-900"
+							href="/problems"
+							className="block px-3 py-2 text-base font-medium text-gray-700 hover:text-gray-900 cursor-pointer"
 						>
-							Contest
+							Problems
 						</Link>
 						<Link
-							href="/battle"
-							className="block px-3 py-2 text-base font-medium text-gray-700 hover:text-gray-900"
+							href="/leetcode"
+							className="block px-3 py-2 text-base font-medium text-gray-700 hover:text-gray-900 cursor-pointer"
 						>
-							Battle
-						</Link>
-						<Link
-							href="/performance"
-							className="block px-3 py-2 text-base font-medium text-gray-700 hover:text-gray-900"
-						>
-							Analytics
+							LeetCode
 						</Link>
 						<Link
 							href="/achievements"
-							className="block px-3 py-2 text-base font-medium text-gray-700 hover:text-gray-900"
+							className="block px-3 py-2 text-base font-medium text-gray-700 hover:text-gray-900 cursor-pointer"
 						>
 							Achievements
 						</Link>

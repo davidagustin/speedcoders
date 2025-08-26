@@ -1,4 +1,4 @@
-import { DatabaseService } from "../DatabaseService";
+import { DatabaseService } from "../services/database";
 import { supabase } from "../supabase";
 
 // Mock Supabase
@@ -21,10 +21,7 @@ const mockProblem = {
 };
 
 describe("DatabaseService", () => {
-	let dbService: DatabaseService;
-
 	beforeEach(() => {
-		dbService = new DatabaseService();
 		jest.clearAllMocks();
 	});
 
@@ -38,7 +35,7 @@ describe("DatabaseService", () => {
 					}),
 				} as any);
 
-				const result = await dbService.getProblems();
+				const result = await DatabaseService.getProblems();
 
 				expect(result).toEqual([mockProblem]);
 				expect(mockSupabase.from).toHaveBeenCalledWith("problems");
@@ -55,7 +52,7 @@ describe("DatabaseService", () => {
 				};
 				mockSupabase.from.mockReturnValue(mockQuery as any);
 
-				await dbService.getProblems({ difficulty: "Easy" });
+				await DatabaseService.getProblems({ difficulty: "Easy" });
 
 				expect(mockQuery.select().eq).toHaveBeenCalledWith(
 					"difficulty",
@@ -73,7 +70,7 @@ describe("DatabaseService", () => {
 					}),
 				} as any);
 
-				await expect(dbService.getProblems()).rejects.toThrow(
+				await expect(DatabaseService.getProblems()).rejects.toThrow(
 					"Database connection failed",
 				);
 			});
@@ -90,7 +87,7 @@ describe("DatabaseService", () => {
 					}),
 				} as any);
 
-				const result = await dbService.getProblemById("1");
+				const result = await DatabaseService.getProblemById(1);
 
 				expect(result).toEqual(mockProblem);
 				expect(mockSupabase.from).toHaveBeenCalledWith("problems");
@@ -105,7 +102,7 @@ describe("DatabaseService", () => {
 					}),
 				} as any);
 
-				const result = await dbService.getProblemById("999");
+				const result = await DatabaseService.getProblemById(999);
 
 				expect(result).toBeNull();
 			});
@@ -134,7 +131,7 @@ describe("DatabaseService", () => {
 					}),
 				} as any);
 
-				const result = await dbService.createProblem(newProblem);
+				const result = await DatabaseService.createProblem(newProblem);
 
 				expect(result).toEqual({ ...newProblem, id: "2", created_at: "2024-01-01", updated_at: "2024-01-01" });
 			});
@@ -165,8 +162,7 @@ describe("DatabaseService", () => {
 					}),
 				} as any);
 
-				const result = await dbService.updateProblem("1", updatedProblem);
-
+				const result = await DatabaseService.updateProblem(1, updatedProblem);
 				expect(result).toEqual({ ...updatedProblem, id: "1", created_at: "2024-01-01", updated_at: "2024-01-02" });
 			});
 		});
@@ -197,7 +193,7 @@ describe("DatabaseService", () => {
 					}),
 				} as any);
 
-				const result = await dbService.getQuizzes();
+				const result = await DatabaseService.getQuizzes();
 
 				expect(result).toEqual([mockQuiz]);
 				expect(mockSupabase.from).toHaveBeenCalledWith("quizzes");
@@ -215,7 +211,7 @@ describe("DatabaseService", () => {
 					}),
 				} as any);
 
-				const result = await dbService.getQuizById("1");
+				const result = await DatabaseService.getQuizById("1");
 
 				expect(result).toEqual(mockQuiz);
 			});
@@ -243,7 +239,7 @@ describe("DatabaseService", () => {
 					}),
 				} as any);
 
-				const result = await dbService.createQuiz(newQuiz);
+				const result = await DatabaseService.createQuiz(newQuiz);
 
 				expect(result).toEqual({ ...newQuiz, id: "2", attempts: 0, average_score: 0, created_at: "2024-01-01", updated_at: "2024-01-01" });
 			});
@@ -274,7 +270,7 @@ describe("DatabaseService", () => {
 					}),
 				} as any);
 
-				const result = await dbService.getQuizAttempts("user1");
+				const result = await DatabaseService.getQuizAttempts("user1");
 
 				expect(result).toEqual([mockAttempt]);
 			});
@@ -300,7 +296,7 @@ describe("DatabaseService", () => {
 					}),
 				} as any);
 
-				const result = await dbService.createQuizAttempt(newAttempt);
+				const result = await DatabaseService.createQuizAttempt(newAttempt);
 
 				expect(result).toEqual({ ...newAttempt, id: "1" });
 			});
@@ -313,7 +309,7 @@ describe("DatabaseService", () => {
 				throw new Error("Network error");
 			});
 
-			await expect(dbService.getProblems()).rejects.toThrow("Network error");
+			await expect(DatabaseService.getProblems()).rejects.toThrow("Network error");
 		});
 
 		it("should handle malformed responses", async () => {
@@ -323,7 +319,7 @@ describe("DatabaseService", () => {
 				}),
 			} as any);
 
-			const result = await dbService.getProblems();
+			const result = await DatabaseService.getProblems();
 			expect(result).toEqual([]);
 		});
 
@@ -333,7 +329,7 @@ describe("DatabaseService", () => {
 				description: "Test",
 			} as any;
 
-			await expect(dbService.createProblem(invalidProblem)).rejects.toThrow();
+			await expect(DatabaseService.createProblem(invalidProblem)).rejects.toThrow();
 		});
 	});
 
@@ -347,11 +343,11 @@ describe("DatabaseService", () => {
 			} as any);
 
 			// First call
-			const result1 = await dbService.getProblems();
+			const result1 = await DatabaseService.getProblems();
 			expect(result1).toEqual([mockProblem]);
 
 			// Second call should use same service
-			const result2 = await dbService.getProblems();
+			const result2 = await DatabaseService.getProblems();
 			expect(result2).toEqual([mockProblem]);
 			expect(mockSupabase.from).toHaveBeenCalledTimes(2);
 		});
