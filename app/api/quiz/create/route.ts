@@ -1,70 +1,64 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth/next-auth';
-import { prisma } from '@/app/lib/prisma';
+import { NextRequest, NextResponse } from 'next/server'
+import { quizManager } from '@/lib/QuizManager'
 
 export async function POST(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
-    
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    const body = await request.json()
+    const { title, description, questions, timeLimit, difficulty, categories, isPublic } = body
+
+    // Validate required fields
+    if (!title || !description || !questions || !Array.isArray(questions)) {
+      return NextResponse.json(
+        { error: 'Missing required fields' },
+        { status: 400 }
+      )
     }
 
-    const { problemIds, timeLimit } = await request.json();
-
-    if (!problemIds || !Array.isArray(problemIds) || problemIds.length === 0) {
-      return NextResponse.json({ error: 'Problem IDs are required' }, { status: 400 });
+    // Validate questions
+    for (const question of questions) {
+      if (!question.questionText || !question.options || question.options.length !== 4) {
+        return NextResponse.json(
+          { error: 'Each question must have text and exactly 4 options' },
+          { status: 400 }
+        )
+      }
+      
+      if (!question.correctAnswers || question.correctAnswers.length === 0) {
+        return NextResponse.json(
+          { error: 'Each question must have at least one correct answer' },
+          { status: 400 }
+        )
+      }
     }
 
-    if (!timeLimit || typeof timeLimit !== 'number') {
-      return NextResponse.json({ error: 'Valid time limit is required' }, { status: 400 });
-    }
+    // Get user ID from session/auth header
+    const userId = request.headers.get('x-user-id') || 'anonymous'
 
-    const quiz = await prisma.quiz.create({
-      data: {
-        userId: session.user.id,
-        problemIds: problemIds,
-        timeLimit: timeLimit,
-        status: 'active',
-        startedAt: new Date(),
-      },
-    });
+    const quiz = await quizManager.createQuiz({
+      title,
+      description,
+      createdBy: userId,
+      questions,
+      timeLimit: timeLimit || 30,
+      difficulty: difficulty || 'Easy',
+      categories: categories || [],
+      isPublic: isPublic !== false
+    })
 
-    return NextResponse.json(quiz);
+    return NextResponse.json({ 
+      success: true, 
+      quiz,
+      message: 'Quiz created successfully' 
+    })
+
   } catch (error) {
-    console.error('Error creating quiz:', error);
+    console.error('Quiz creation error:', error)
     return NextResponse.json(
-      { error: 'Failed to create quiz' },
-      { status: 500 }
-    );
-  }
-}
-
-export async function GET(request: NextRequest) {
-  try {
-    const session = await getServerSession(authOptions);
-    
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-    
-    const quizzes = await prisma.quiz.findMany({
-      where: {
-        userId: session.user.id,
+      { 
+        error: 'Failed to create quiz',
+        details: error instanceof Error ? error.message : 'Unknown error'
       },
-      orderBy: {
-        createdAt: 'desc',
-      },
-      take: 10,
-    });
-
-    return NextResponse.json({ quizzes });
-  } catch (error) {
-    console.error('Error fetching quizzes:', error);
-    return NextResponse.json(
-      { error: 'Failed to fetch quizzes' },
       { status: 500 }
-    );
+    )
   }
 }

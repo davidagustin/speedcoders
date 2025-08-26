@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { 
   ChartBarIcon, 
   PlayIcon, 
@@ -14,9 +14,16 @@ import {
   CalendarIcon,
   ClockIcon,
   StarIcon,
-  PlusIcon
+  PlusIcon,
+  XCircleIcon
 } from '@heroicons/react/24/outline'
 import { LoadingSpinner } from '@/components/LoadingSpinner'
+import EditorialQuiz from '@/app/components/EditorialQuiz'
+import QuizResults from '@/app/components/QuizResults'
+import LearningProgress from '@/app/components/LearningProgress'
+import ProblemBrowser from '@/app/components/ProblemBrowser'
+import StudyPlanner from '@/app/components/StudyPlanner'
+import { comprehensiveProblems } from '@/lib/data/comprehensive-problems'
 
 interface QuizState {
   isActive: boolean
@@ -40,6 +47,9 @@ export default function Dashboard() {
   const [showResults, setShowResults] = useState(false)
   const [quizResults, setQuizResults] = useState<any>(null)
   const [selectedProblems, setSelectedProblems] = useState<string[]>([])
+  const [componentError, setComponentError] = useState<string | null>(null)
+  const [studySessions, setStudySessions] = useState<any[]>([])
+  const [studyGoals, setStudyGoals] = useState<any[]>([])
 
   // Mock user stats - in real app, this would come from API
   const userStats = {
@@ -83,6 +93,7 @@ export default function Dashboard() {
 
   const startQuiz = async (config: any) => {
     try {
+      setComponentError(null)
       const response = await fetch('/api/quiz/enhanced-start', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -103,9 +114,12 @@ export default function Dashboard() {
           answers: []
         })
         setActiveTab('practice')
+      } else {
+        throw new Error('Failed to start quiz')
       }
     } catch (error) {
       console.error('Error starting quiz:', error)
+      setComponentError('Failed to start quiz. Please try again.')
     }
   }
 
@@ -202,6 +216,46 @@ export default function Dashboard() {
     ]
   }
 
+  const handleAddSession = (session: any) => {
+    setStudySessions(prev => [...prev, { ...session, id: Date.now().toString() }])
+  }
+
+  const handleUpdateSession = (id: string, session: any) => {
+    setStudySessions(prev => prev.map(s => s.id === id ? { ...s, ...session } : s))
+  }
+
+  const handleDeleteSession = (id: string) => {
+    setStudySessions(prev => prev.filter(s => s.id !== id))
+  }
+
+  const handleAddGoal = (goal: any) => {
+    setStudyGoals(prev => [...prev, { ...goal, id: Date.now().toString() }])
+  }
+
+  const handleUpdateGoal = (id: string, goal: any) => {
+    setStudyGoals(prev => prev.map(g => g.id === id ? { ...g, ...goal } : g))
+  }
+
+  const handleDeleteGoal = (id: string) => {
+    setStudyGoals(prev => prev.filter(g => g.id !== id))
+  }
+
+  const handleSelectProblem = (problem: any) => {
+    // Handle problem selection
+    console.log('Selected problem:', problem)
+  }
+
+  const handleToggleSelection = (problemId: string) => {
+    setSelectedProblems(prev => 
+      prev.includes(problemId) 
+        ? prev.filter(id => id !== problemId)
+        : [...prev, problemId]
+    )
+  }
+
+  // Simplified component rendering
+  const renderFallback = (fallback: any) => fallback
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
@@ -249,6 +303,22 @@ export default function Dashboard() {
           </nav>
         </div>
       </div>
+
+      {/* Error Message */}
+      {componentError && (
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+          <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+            <div className="flex">
+              <div className="flex-shrink-0">
+                <XCircleIcon className="h-5 w-5 text-red-400" />
+              </div>
+              <div className="ml-3">
+                <p className="text-sm text-red-800">{componentError}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Main Content */}
       <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
@@ -401,21 +471,95 @@ export default function Dashboard() {
         )}
 
         {activeTab === 'progress' && (
-          <div className="bg-white p-6 rounded-lg shadow">
-            <h2 className="text-lg font-semibold mb-4">Learning Progress</h2>
-            <p className="text-gray-600">Progress tracking component will be implemented here.</p>
-          </div>
+          <LearningProgress
+            data={{
+              totalProblems: 150,
+              solvedProblems: 67,
+              streakDays: userStats.streakDays,
+              totalTimeSpent: userStats.totalTimeSpent,
+              accuracy: userStats.averageScore,
+              level: "Intermediate",
+              experience: 1250,
+              nextLevelExp: 2000,
+              categories: [
+                { name: "Arrays", progress: 75, total: 30, solved: 22 },
+                { name: "Strings", progress: 60, total: 25, solved: 15 },
+                { name: "Trees", progress: 40, total: 20, solved: 8 },
+                { name: "Graphs", progress: 25, total: 15, solved: 4 }
+              ],
+              recentActivity: [
+                {
+                  id: "1",
+                  type: "problem",
+                  title: "Two Sum",
+                  difficulty: "Easy",
+                  status: "completed",
+                  timestamp: "2024-01-15T10:30:00Z",
+                  timeSpent: 5
+                },
+                {
+                  id: "2",
+                  type: "quiz",
+                  title: "Array Practice Quiz",
+                  difficulty: "Medium",
+                  status: "completed",
+                  timestamp: "2024-01-14T15:45:00Z",
+                  timeSpent: 25
+                }
+              ],
+              achievements: [
+                {
+                  id: "1",
+                  title: "First Steps",
+                  description: "Complete your first problem",
+                  icon: "🎯",
+                  unlocked: true,
+                  progress: 1,
+                  maxProgress: 1
+                },
+                {
+                  id: "2",
+                  title: "Streak Master",
+                  description: "Maintain a 7-day study streak",
+                  icon: "🔥",
+                  unlocked: true,
+                  progress: 7,
+                  maxProgress: 7
+                },
+                {
+                  id: "3",
+                  title: "Algorithm Expert",
+                  description: "Master 10 algorithms",
+                  icon: "🏆",
+                  unlocked: false,
+                  progress: 6,
+                  maxProgress: 10
+                }
+              ]
+            }}
+          />
         )}
 
         {activeTab === 'browser' && (
-          <ProblemBrowser />
+          <ProblemBrowser
+            problems={comprehensiveProblems}
+            onSelectProblem={handleSelectProblem}
+            selectedProblems={selectedProblems}
+            onToggleSelection={handleToggleSelection}
+          />
         )}
 
         {activeTab === 'planner' && (
-          <div className="bg-white p-6 rounded-lg shadow">
-            <h2 className="text-lg font-semibold mb-4">Study Planner</h2>
-            <p className="text-gray-600">Study planning component will be implemented here.</p>
-          </div>
+          <StudyPlanner
+            sessions={studySessions}
+            goals={studyGoals}
+            onAddSession={handleAddSession}
+            onUpdateSession={handleUpdateSession}
+            onDeleteSession={handleDeleteSession}
+            onAddGoal={handleAddGoal}
+            onUpdateGoal={handleUpdateGoal}
+            onDeleteGoal={handleDeleteGoal}
+          />
         )}
       </div>
     </div>

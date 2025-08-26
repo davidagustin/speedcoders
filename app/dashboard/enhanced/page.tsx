@@ -36,7 +36,7 @@ export default async function EnhancedDashboard() {
           {/* Right Column - Learning Path & Problem Browser */}
           <div className="lg:col-span-2 space-y-6">
             <LearningPath />
-            <ProblemBrowser />
+            <ProblemBrowser onSelectProblems={() => {}} onCreateQuiz={() => {}} />
           </div>
         </div>
 

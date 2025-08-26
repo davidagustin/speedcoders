@@ -13,7 +13,8 @@ import {
   PauseIcon,
   PlayIcon
 } from "@heroicons/react/24/outline";
-import { problems as allProblems } from "@/lib/data/problems";
+import { comprehensiveProblems as allProblems } from "@/lib/data/comprehensive-problems";
+import EditorialView from "@/app/components/EditorialView";
 
 interface QuizPageProps {
   params: {
@@ -32,6 +33,8 @@ export default function QuizPage({ params }: QuizPageProps) {
   const [isPaused, setIsPaused] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [showEditorial, setShowEditorial] = useState(false);
+  const [currentEditorial, setCurrentEditorial] = useState<any>(null);
 
   useEffect(() => {
     if (!session) return;
@@ -91,6 +94,13 @@ export default function QuizPage({ params }: QuizPageProps) {
     });
   };
 
+  const handleShowEditorial = () => {
+    if (currentProblem?.editorial) {
+      setCurrentEditorial(currentProblem.editorial);
+      setShowEditorial(true);
+    }
+  };
+
   const handleSubmitQuiz = async () => {
     if (isSubmitted) return;
 
@@ -99,12 +109,14 @@ export default function QuizPage({ params }: QuizPageProps) {
 
     try {
       const response = await fetch(`/api/quiz/${params.id}/submit`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
         body: JSON.stringify({
           selectedAlgorithms,
-          timeSpent: (quiz.timeLimit * 60) - timeLeft
-        })
+          timeSpent: quiz.timeLimit * 60 - timeLeft
+        }),
       });
 
       if (response.ok) {
@@ -112,61 +124,39 @@ export default function QuizPage({ params }: QuizPageProps) {
         router.push(`/quiz/${params.id}/results`);
       } else {
         console.error("Failed to submit quiz");
-        alert("Failed to submit quiz. Please try again.");
-        setIsSubmitted(false);
-        setIsPaused(false);
       }
     } catch (error) {
       console.error("Error submitting quiz:", error);
-      alert("Failed to submit quiz. Please try again.");
-      setIsSubmitted(false);
-      setIsPaused(false);
     }
   };
 
-  if (!session) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-900 mb-4">Please sign in to take the quiz</h1>
-          <Link href="/auth/login" className="bg-blue-600 text-white px-6 py-2 rounded-lg">
-            Sign In
-          </Link>
-        </div>
-      </div>
-    );
-  }
+  const currentProblem = problems[currentProblemIndex];
 
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
-          <p className="mt-4 text-gray-600">Loading quiz...</p>
-        </div>
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
       </div>
     );
   }
 
-  if (!quiz || problems.length === 0) {
+  if (!currentProblem) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-900 mb-4">Quiz not found</h1>
-          <Link href="/dashboard" className="bg-blue-600 text-white px-6 py-2 rounded-lg">
-            Back to Dashboard
+          <h1 className="text-2xl font-bold mb-4">Problem not found</h1>
+          <Link href="/dashboard" className="text-blue-600 hover:underline">
+            Return to Dashboard
           </Link>
         </div>
       </div>
     );
   }
 
-  const currentProblem = problems[currentProblemIndex];
-
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <div className="bg-white border-b sticky top-0 z-10">
+      <div className="bg-white shadow-sm border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
@@ -175,27 +165,32 @@ export default function QuizPage({ params }: QuizPageProps) {
                 className="inline-flex items-center text-gray-600 hover:text-gray-900"
               >
                 <ArrowLeftIcon className="h-5 w-5 mr-2" />
-                Exit Quiz
+                Back to Dashboard
               </Link>
-              <div>
-                <h1 className="text-lg font-semibold text-gray-900">Quiz in Progress</h1>
-                <p className="text-sm text-gray-600">
-                  Problem {currentProblemIndex + 1} of {problems.length}
-                </p>
-              </div>
+              <div className="h-6 w-px bg-gray-300" />
+              <h1 className="text-lg font-semibold text-gray-900">
+                {quiz?.title || 'Quiz'}
+              </h1>
             </div>
+            
             <div className="flex items-center space-x-4">
               <button
                 onClick={() => setIsPaused(!isPaused)}
                 className="inline-flex items-center px-3 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg"
               >
                 {isPaused ? (
-                  <PlayIcon className="h-4 w-4 mr-2" />
+                  <>
+                    <PlayIcon className="h-4 w-4 mr-2" />
+                    Resume
+                  </>
                 ) : (
-                  <PauseIcon className="h-4 w-4 mr-2" />
+                  <>
+                    <PauseIcon className="h-4 w-4 mr-2" />
+                    Pause
+                  </>
                 )}
-                {isPaused ? "Resume" : "Pause"}
               </button>
+              
               <div className="flex items-center space-x-2">
                 <ClockIcon className="h-5 w-5 text-gray-400" />
                 <span className={`font-mono text-lg ${timeLeft < 300 ? 'text-red-600' : 'text-gray-900'}`}>
@@ -222,13 +217,21 @@ export default function QuizPage({ params }: QuizPageProps) {
               <div className="mb-6">
                 <div className="flex items-center justify-between mb-4">
                   <h2 className="text-2xl font-bold text-gray-900">{currentProblem?.title}</h2>
-                  <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
-                    currentProblem?.difficulty === 'Easy' ? 'bg-green-100 text-green-800' :
-                    currentProblem?.difficulty === 'Medium' ? 'bg-yellow-100 text-yellow-800' :
-                    'bg-red-100 text-red-800'
-                  }`}>
-                    {currentProblem?.difficulty}
-                  </span>
+                  <div className="flex items-center space-x-2">
+                    <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
+                      currentProblem?.difficulty === 'Easy' ? 'bg-green-100 text-green-800' :
+                      currentProblem?.difficulty === 'Medium' ? 'bg-yellow-100 text-yellow-800' :
+                      'bg-red-100 text-red-800'
+                    }`}>
+                      {currentProblem?.difficulty}
+                    </span>
+                    <button
+                      onClick={handleShowEditorial}
+                      className="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
+                    >
+                      📖 Editorial
+                    </button>
+                  </div>
                 </div>
                 <p className="text-gray-700 mb-6 whitespace-pre-wrap">
                   {currentProblem?.description}
@@ -339,6 +342,15 @@ export default function QuizPage({ params }: QuizPageProps) {
           </div>
         </div>
       </div>
+
+      {/* Editorial Modal */}
+      {currentEditorial && (
+        <EditorialView
+          editorial={currentEditorial}
+          isVisible={showEditorial}
+          onClose={() => setShowEditorial(false)}
+        />
+      )}
     </div>
   );
 }

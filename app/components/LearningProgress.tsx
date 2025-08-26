@@ -251,7 +251,7 @@ export default function LearningProgress({ data }: LearningProgressProps) {
       <div className="bg-white rounded-lg shadow-sm border p-6">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-xl font-semibold text-gray-900">Recent Activity</h2>
-          <TrendingUpIcon className="w-6 h-6 text-green-500" />
+          <ArrowTrendingUpIcon className="w-6 h-6 text-green-500" />
         </div>
         
         <div className="space-y-3">

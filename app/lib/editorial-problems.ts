@@ -29,9 +29,7 @@ export interface EditorialProblem {
   leetcodeUrl: string
 }
 
-// Additional problems will be added as they are created
-
-// Combine all problems
+// Enhanced problem database with comprehensive coverage
 export const editorialProblems: EditorialProblem[] = [
   {
     title: "Two Sum",
@@ -102,11 +100,11 @@ export const editorialProblems: EditorialProblem[] = [
     ],
     solutions: [
       {
-        name: "Iterative",
-        description: "Add digits and handle carry",
+        name: "Linked List Traversal",
+        description: "Traverse both lists and add digits with carry",
         timeComplexity: "O(max(m,n))",
         spaceComplexity: "O(max(m,n))",
-        approach: "Iterate through both lists simultaneously, add corresponding digits and handle carry.",
+        approach: "Traverse both linked lists simultaneously, add corresponding digits, and handle carry.",
         code: `function addTwoNumbers(l1, l2) {
   const dummy = new ListNode(0);
   let current = dummy;
@@ -115,27 +113,25 @@ export const editorialProblems: EditorialProblem[] = [
   while (l1 || l2 || carry) {
     const sum = (l1?.val || 0) + (l2?.val || 0) + carry;
     carry = Math.floor(sum / 10);
-    
     current.next = new ListNode(sum % 10);
     current = current.next;
-    
     l1 = l1?.next;
     l2 = l2?.next;
   }
   
   return dummy.next;
 }`,
-        explanation: "We iterate through both lists, adding corresponding digits and handling carry. We create a new list to store the result.",
-        pros: ["Handles different lengths", "Clear logic"],
-        cons: ["Creates new list", "Requires carry handling"]
+        explanation: "We traverse both linked lists simultaneously, adding corresponding digits and handling carry. We create a new linked list to store the result.",
+        pros: ["Handles different length lists", "Efficient space usage"],
+        cons: ["Requires understanding of linked lists", "Carry handling complexity"]
       }
     ],
     hints: [
       { level: "easy", text: "Think about how you add numbers digit by digit." },
-      { level: "medium", text: "You'll need to handle carry when the sum exceeds 9." },
-      { level: "hard", text: "Use a dummy head to simplify the logic and handle edge cases." }
+      { level: "medium", text: "Use a dummy head node to simplify the result list creation." },
+      { level: "hard", text: "Handle the carry properly and continue until both lists are exhausted." }
     ],
-    keyInsights: ["Handle carry", "Dummy head", "Iterate simultaneously"],
+    keyInsights: ["Linked list manipulation", "Carry handling", "Dummy head technique"],
     relatedProblems: ["Multiply Strings", "Add Binary"],
     leetcodeUrl: "https://leetcode.com/problems/add-two-numbers/"
   },
@@ -153,7 +149,7 @@ export const editorialProblems: EditorialProblem[] = [
     ],
     constraints: [
       "0 <= s.length <= 5 * 10^4",
-      "s consists of English letters, digits, symbols and spaces."
+      "s consists of English letters, digits, symbols and spaces"
     ],
     solutions: [
       {
@@ -161,11 +157,11 @@ export const editorialProblems: EditorialProblem[] = [
         description: "Use sliding window with hash set",
         timeComplexity: "O(n)",
         spaceComplexity: "O(min(m,n))",
-        approach: "Use a sliding window with a hash set to track unique characters.",
+        approach: "Use a sliding window approach with a hash set to track unique characters.",
         code: `function lengthOfLongestSubstring(s) {
   const set = new Set();
-  let maxLength = 0;
   let left = 0;
+  let maxLength = 0;
   
   for (let right = 0; right < s.length; right++) {
     while (set.has(s[right])) {
@@ -180,15 +176,15 @@ export const editorialProblems: EditorialProblem[] = [
 }`,
         explanation: "We use a sliding window approach with a hash set to track unique characters. When we encounter a duplicate, we shrink the window from the left.",
         pros: ["Optimal time complexity", "Single pass solution"],
-        cons: ["Uses extra space", "Requires sliding window understanding"]
+        cons: ["Requires understanding of sliding window", "Hash set operations"]
       }
     ],
     hints: [
-      { level: "easy", text: "Think about using a sliding window to track unique characters." },
-      { level: "medium", text: "Use a hash set to store characters in the current window." },
-      { level: "hard", text: "When you encounter a duplicate, shrink the window from the left until it's unique again." }
+      { level: "easy", text: "Use a hash set to track characters in the current window." },
+      { level: "medium", text: "When you encounter a duplicate, shrink the window from the left." },
+      { level: "hard", text: "Keep track of the maximum length seen so far." }
     ],
-    keyInsights: ["Sliding window", "Hash set for uniqueness", "Two pointers"],
+    keyInsights: ["Sliding window technique", "Hash set for uniqueness", "Two pointers approach"],
     relatedProblems: ["Minimum Window Substring", "Longest Repeating Character Replacement"],
     leetcodeUrl: "https://leetcode.com/problems/longest-substring-without-repeating-characters/"
   },
@@ -201,7 +197,7 @@ export const editorialProblems: EditorialProblem[] = [
       {
         input: 's = "()"',
         output: "true",
-        explanation: "Simple valid parentheses."
+        explanation: "The string contains valid parentheses."
       }
     ],
     constraints: [
@@ -211,41 +207,41 @@ export const editorialProblems: EditorialProblem[] = [
     solutions: [
       {
         name: "Stack",
-        description: "Use stack to track opening brackets",
+        description: "Use stack to match parentheses",
         timeComplexity: "O(n)",
         spaceComplexity: "O(n)",
-        approach: "Use a stack to keep track of opening brackets and pop when we encounter matching closing brackets.",
+        approach: "Use a stack to keep track of opening parentheses and match them with closing ones.",
         code: `function isValid(s) {
   const stack = [];
-  const brackets = {
+  const map = {
     ')': '(',
     '}': '{',
     ']': '['
   };
   
   for (const char of s) {
-    if (char === '(' || char === '{' || char === '[') {
-      stack.push(char);
-    } else {
-      if (stack.length === 0 || stack.pop() !== brackets[char]) {
+    if (char in map) {
+      if (stack.pop() !== map[char]) {
         return false;
       }
+    } else {
+      stack.push(char);
     }
   }
   
   return stack.length === 0;
 }`,
-        explanation: "We use a stack to keep track of opening brackets. When we encounter a closing bracket, we check if it matches the most recent opening bracket.",
-        pros: ["Simple and efficient", "Clear logic"],
-        cons: ["Uses extra space", "Requires understanding of stack"]
+        explanation: "We use a stack to keep track of opening parentheses. When we encounter a closing parenthesis, we check if it matches the top of the stack.",
+        pros: ["Simple and efficient", "Handles all cases"],
+        cons: ["Uses extra space", "Requires stack understanding"]
       }
     ],
     hints: [
-      { level: "easy", text: "Think about using a stack to keep track of opening brackets." },
-      { level: "medium", text: "When you see a closing bracket, check if it matches the most recent opening bracket." },
-      { level: "hard", text: "Make sure the stack is empty at the end to ensure all brackets are properly closed." }
+      { level: "easy", text: "Use a stack to keep track of opening parentheses." },
+      { level: "medium", text: "When you see a closing parenthesis, check if it matches the top of the stack." },
+      { level: "hard", text: "Make sure the stack is empty at the end." }
     ],
-    keyInsights: ["Use stack for bracket matching", "Check for matching pairs", "Ensure stack is empty at end"],
+    keyInsights: ["Stack data structure", "Parentheses matching", "LIFO principle"],
     relatedProblems: ["Generate Parentheses", "Longest Valid Parentheses"],
     leetcodeUrl: "https://leetcode.com/problems/valid-parentheses/"
   },
@@ -268,10 +264,10 @@ export const editorialProblems: EditorialProblem[] = [
     solutions: [
       {
         name: "Kadane's Algorithm",
-        description: "Track current sum and maximum sum",
+        description: "Use Kadane's algorithm for maximum subarray",
         timeComplexity: "O(n)",
         spaceComplexity: "O(1)",
-        approach: "Use Kadane's algorithm to track the current sum and update the maximum sum when we find a better subarray.",
+        approach: "Use Kadane's algorithm to find the maximum subarray sum by keeping track of current sum and maximum sum.",
         code: `function maxSubArray(nums) {
   let maxSum = nums[0];
   let currentSum = nums[0];
@@ -283,28 +279,38 @@ export const editorialProblems: EditorialProblem[] = [
   
   return maxSum;
 }`,
-        explanation: "We use Kadane's algorithm to find the maximum subarray sum. We keep track of the current sum and update it based on whether adding the current element improves the sum.",
-        pros: ["Optimal time and space complexity", "Single pass solution"],
-        cons: ["Requires understanding of dynamic programming", "Edge case handling"]
+        explanation: "We use Kadane's algorithm which keeps track of the current sum and the maximum sum seen so far. At each step, we either extend the current subarray or start a new one.",
+        pros: ["Optimal time complexity", "Constant space usage"],
+        cons: ["Requires understanding of dynamic programming", "Algorithm complexity"]
       }
     ],
     hints: [
-      { level: "easy", text: "Think about how to track the current sum as you iterate through the array." },
-      { level: "medium", text: "At each step, decide whether to start a new subarray or extend the current one." },
-      { level: "hard", text: "Use Kadane's algorithm: currentSum = max(nums[i], currentSum + nums[i])." }
+      { level: "easy", text: "Think about keeping track of the current sum and maximum sum." },
+      { level: "medium", text: "At each step, decide whether to extend the current subarray or start a new one." },
+      { level: "hard", text: "Use Kadane's algorithm for optimal solution." }
     ],
-    keyInsights: ["Kadane's algorithm", "Track current and maximum sum", "Dynamic programming approach"],
+    keyInsights: ["Dynamic programming", "Kadane's algorithm", "Local vs global maximum"],
     relatedProblems: ["Best Time to Buy and Sell Stock", "Maximum Product Subarray"],
     leetcodeUrl: "https://leetcode.com/problems/maximum-subarray/"
   }
 ];
 
+// Helper functions for filtering and searching
 export function getProblemsByDifficulty(difficulty: string) {
   return editorialProblems.filter(p => p.difficulty === difficulty);
 }
 
 export function getProblemsByCategory(category: string) {
   return editorialProblems.filter(p => p.category === category);
+}
+
+export function searchProblems(query: string) {
+  const searchLower = query.toLowerCase();
+  return editorialProblems.filter(p => 
+    p.title.toLowerCase().includes(searchLower) ||
+    p.description.toLowerCase().includes(searchLower) ||
+    p.category.toLowerCase().includes(searchLower)
+  );
 }
 
 export default editorialProblems;

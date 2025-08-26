@@ -46,11 +46,30 @@ function Quiz({ user, onComplete }) {
     let config = {
       mode: quizOptions.mode || 'smart',
       difficulty: quizOptions.difficulty || 'Mixed',
-      timeLimit: 600,
-      questionCount: 10,
+      timeLimit: quizOptions.timeLimit || 600,
+      questionCount: quizOptions.questionCount || 10,
       algorithms: quizOptions.algorithms || [],
       company: quizOptions.company || null
     };
+
+    // Handle custom quiz mode
+    if (config.mode === 'custom' && quizOptions.customProblems) {
+      const finalQuestions = quizOptions.customProblems.map(q => ({
+        ...q,
+        selectedAlgorithms: []
+      }));
+      
+      setQuestions(finalQuestions);
+      setQuizConfig(config);
+      setTimeLeft(config.timeLimit);
+      
+      const initialAnswers = {};
+      finalQuestions.forEach(q => {
+        initialAnswers[q.id] = [];
+      });
+      setAnswers(initialAnswers);
+      return;
+    }
 
     // Apply filters based on quiz mode
     switch (config.mode) {

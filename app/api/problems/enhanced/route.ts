@@ -1,24 +1,33 @@
 import { NextResponse } from 'next/server'
-import { editorialProblems } from '@/lib/editorial-problems'
+import { comprehensiveProblems } from '@/lib/data/comprehensive-problems'
 
 export async function GET(request: Request) {
-  const { searchParams } = new URL(request.url)
-  const difficulty = searchParams.get('difficulty')
-  const category = searchParams.get('category')
-  const limit = parseInt(searchParams.get('limit') || '50')
-  const offset = parseInt(searchParams.get('offset') || '0')
-
   try {
-    let filteredProblems = editorialProblems
+    const { searchParams } = new URL(request.url)
+    const difficulty = searchParams.get('difficulty')
+    const category = searchParams.get('category')
+    const search = searchParams.get('search')
+    const limit = parseInt(searchParams.get('limit') || '50')
+    const offset = parseInt(searchParams.get('offset') || '0')
 
-    // Filter by difficulty
+    let filteredProblems = comprehensiveProblems
+
+    // Apply filters
     if (difficulty && difficulty !== 'All') {
       filteredProblems = filteredProblems.filter(p => p.difficulty === difficulty)
     }
 
-    // Filter by category
     if (category && category !== 'All') {
-      filteredProblems = filteredProblems.filter(p => p.category === category)
+      filteredProblems = filteredProblems.filter(p => p.category === category || p.algorithms.includes(category))
+    }
+
+    if (search) {
+      filteredProblems = filteredProblems.filter(p =>
+        p.title.toLowerCase().includes(search.toLowerCase()) ||
+        p.description.toLowerCase().includes(search.toLowerCase()) ||
+        p.category.toLowerCase().includes(search.toLowerCase()) ||
+        p.algorithms.some(algo => algo.toLowerCase().includes(search.toLowerCase()))
+      )
     }
 
     // Apply pagination
@@ -26,11 +35,11 @@ export async function GET(request: Request) {
 
     // Get statistics
     const stats = {
-      total: editorialProblems.length,
-      easy: editorialProblems.filter(p => p.difficulty === 'Easy').length,
-      medium: editorialProblems.filter(p => p.difficulty === 'Medium').length,
-      hard: editorialProblems.filter(p => p.difficulty === 'Hard').length,
-      categories: [...new Set(editorialProblems.map(p => p.category))].sort(),
+      total: comprehensiveProblems.length,
+      easy: comprehensiveProblems.filter(p => p.difficulty === 'Easy').length,
+      medium: comprehensiveProblems.filter(p => p.difficulty === 'Medium').length,
+      hard: comprehensiveProblems.filter(p => p.difficulty === 'Hard').length,
+      categories: [...new Set(comprehensiveProblems.map(p => p.category))].sort(),
       filtered: filteredProblems.length,
       returned: paginatedProblems.length
     }
@@ -62,15 +71,15 @@ export async function POST(request: Request) {
     const body = await request.json()
     const { searchTerm, filters } = body
 
-    let filteredProblems = editorialProblems
+    let filteredProblems = comprehensiveProblems
 
-    // Search by title or description
+    // Search by title, description, or category
     if (searchTerm) {
-      const searchLower = searchTerm.toLowerCase()
-      filteredProblems = filteredProblems.filter(p => 
-        p.title.toLowerCase().includes(searchLower) ||
-        p.description.toLowerCase().includes(searchLower) ||
-        p.category.toLowerCase().includes(searchLower)
+      filteredProblems = filteredProblems.filter(p =>
+        p.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        p.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        p.category.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        p.algorithms.some(algo => algo.toLowerCase().includes(searchTerm.toLowerCase()))
       )
     }
 
@@ -84,9 +93,9 @@ export async function POST(request: Request) {
       }
       if (filters.algorithms && filters.algorithms.length > 0) {
         filteredProblems = filteredProblems.filter(p => 
-          p.solutions.some(s => 
+          p.algorithms.some(algo => 
             filters.algorithms.some((alg: string) => 
-              s.name.toLowerCase().includes(alg.toLowerCase())
+              algo.toLowerCase().includes(alg.toLowerCase())
             )
           )
         )

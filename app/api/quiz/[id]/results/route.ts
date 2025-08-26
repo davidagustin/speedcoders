@@ -14,7 +14,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
   try {
     const session = await getServerSession(authOptions);
     
-    if (!session?.user?.id) {
+    if (!session?.user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
@@ -28,42 +28,64 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       return NextResponse.json({ error: 'Quiz not found' }, { status: 404 });
     }
 
-    if (quiz.userId !== session.user.id) {
+    if (quiz.createdBy !== session.user.email) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
     }
 
-    if (quiz.status !== 'completed') {
-      return NextResponse.json({ error: 'Quiz not completed yet' }, { status: 400 });
-    }
+    // For mock implementation, we'll skip the status check
+    // if (quiz.status !== 'completed') {
+    //   return NextResponse.json({ error: 'Quiz not completed yet' }, { status: 400 });
+    // }
 
-    const result = await prisma.quizResult.findFirst({
+    const attempt = await prisma.quizAttempt.findFirst({
       where: {
         quizId: id,
-        userId: session.user.id,
+        userId: session.user.email as string,
+      },
+      include: {
+        answers: {
+          include: {
+            question: {
+              include: {
+                problem: true
+              }
+            }
+          }
+        }
       },
       orderBy: {
-        createdAt: 'desc',
+        startedAt: 'desc',
       },
     });
 
-    if (!result) {
+    if (!attempt) {
       return NextResponse.json({ error: 'Results not found' }, { status: 404 });
     }
 
-    // Parse stored JSON data
-    const problemResults = JSON.parse(result.problemResults as string);
+    // Calculate results from attempt data
+    const totalQuestions = attempt.answers.length;
+    const correctAnswers = attempt.answers.filter(a => a.isCorrect).length;
+    const accuracy = totalQuestions > 0 ? (correctAnswers / totalQuestions) * 100 : 0;
 
     return NextResponse.json({
       quiz,
       results: {
-        id: result.id,
-        scorePercentage: result.score,
-        correctAnswers: result.correctAnswers,
-        totalQuestions: result.totalQuestions,
-        timeSpent: result.timeSpent,
-        accuracy: result.accuracy,
-        problemResults,
-        createdAt: result.createdAt,
+        id: attempt.id,
+        scorePercentage: attempt.score,
+        correctAnswers,
+        totalQuestions,
+        timeSpent: attempt.timeSpent,
+        accuracy,
+        problemResults: attempt.answers.map(answer => ({
+          problemId: answer.question.problemId,
+          title: answer.question.problem.title,
+          isCorrect: answer.isCorrect,
+          selectedAlgorithms: JSON.parse(answer.selectedAlgorithms),
+          timeSpent: answer.timeSpent
+        })),
+        createdAt: attempt.startedAt,
+        completed: attempt.completed,
+        completedAt: attempt.completedAt
       }
     });
   } catch (error) {

@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { problemGenerator } from '../../src/lib/problemGenerator';
 
 interface Problem {
   id: number;
@@ -11,6 +10,8 @@ interface Problem {
   category: string;
   description: string;
   leetcodeUrl: string;
+  algorithms: string[];
+  tags: string[];
 }
 
 interface ProblemsResponse {
@@ -23,26 +24,25 @@ interface ProblemsResponse {
     hasNext: boolean;
     hasPrev: boolean;
   };
+  categories: string[];
+  algorithms: string[];
 }
 
 export default function ProblemsPage() {
   const [problems, setProblems] = useState<Problem[]>([]);
   const [loading, setLoading] = useState(true);
   const [pagination, setPagination] = useState<any>(null);
+  const [categories, setCategories] = useState<string[]>([]);
+  const [algorithms, setAlgorithms] = useState<string[]>([]);
   const [filters, setFilters] = useState({
     difficulty: '',
     category: '',
+    algorithm: '',
     search: '',
-    sortBy: 'id',
+    sortBy: 'title',
     sortOrder: 'asc'
   });
   const [currentPage, setCurrentPage] = useState(1);
-
-  const categories = [
-    'Array', 'String', 'Linked List', 'Tree', 'Graph', 'Dynamic Programming',
-    'Greedy', 'Backtracking', 'Binary Search', 'Two Pointers', 'Sliding Window',
-    'Stack', 'Queue', 'Heap', 'Hash Table', 'Math', 'Bit Manipulation'
-  ];
 
   useEffect(() => {
     fetchProblems();
@@ -62,6 +62,8 @@ export default function ProblemsPage() {
       
       setProblems(data.problems);
       setPagination(data.pagination);
+      setCategories(data.categories || []);
+      setAlgorithms(data.algorithms || []);
     } catch (error) {
       console.error('Error fetching problems:', error);
     } finally {
@@ -96,7 +98,7 @@ export default function ProblemsPage() {
 
         {/* Filters */}
         <div className="bg-white rounded-lg shadow-lg p-6 mb-8">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4">
             {/* Search */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">Search</label>
@@ -139,6 +141,21 @@ export default function ProblemsPage() {
               </select>
             </div>
 
+            {/* Algorithm */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Algorithm</label>
+              <select
+                value={filters.algorithm}
+                onChange={(e) => handleFilterChange('algorithm', e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+              >
+                <option value="">All Algorithms</option>
+                {algorithms.map(algorithm => (
+                  <option key={algorithm} value={algorithm}>{algorithm}</option>
+                ))}
+              </select>
+            </div>
+
             {/* Sort By */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">Sort By</label>
@@ -147,10 +164,10 @@ export default function ProblemsPage() {
                 onChange={(e) => handleFilterChange('sortBy', e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
               >
-                <option value="id">ID</option>
                 <option value="title">Title</option>
                 <option value="difficulty">Difficulty</option>
                 <option value="category">Category</option>
+                <option value="id">ID</option>
               </select>
             </div>
 
@@ -191,6 +208,9 @@ export default function ProblemsPage() {
                         Category
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Algorithms
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Actions
                       </th>
                     </tr>
@@ -215,6 +235,20 @@ export default function ProblemsPage() {
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                           {problem.category}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="flex flex-wrap gap-1">
+                            {problem.algorithms.slice(0, 2).map(algorithm => (
+                              <span key={algorithm} className="px-2 py-1 text-xs bg-blue-100 text-blue-800 rounded">
+                                {algorithm}
+                              </span>
+                            ))}
+                            {problem.algorithms.length > 2 && (
+                              <span className="px-2 py-1 text-xs bg-gray-100 text-gray-600 rounded">
+                                +{problem.algorithms.length - 2}
+                              </span>
+                            )}
+                          </div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                           <div className="flex space-x-2">

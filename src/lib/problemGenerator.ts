@@ -1,4 +1,4 @@
-import { comprehensiveProblems } from '@/lib/data/problems';
+import { comprehensiveProblems, LeetCodeProblem as ComprehensiveProblem } from '@/lib/data/comprehensive-problems';
 
 export interface LeetCodeProblem {
   id: number;
@@ -50,10 +50,45 @@ export interface ProblemGeneratorConfig {
 }
 
 export class ProblemGenerator {
-  private allProblems: LeetCodeProblem[];
+  private allProblems: ComprehensiveProblem[];
 
   constructor() {
     this.allProblems = comprehensiveProblems;
+  }
+
+  /**
+   * Convert ComprehensiveProblem to LeetCodeProblem format
+   */
+  private convertToLeetCodeProblem(problem: ComprehensiveProblem): LeetCodeProblem {
+    return {
+      id: problem.id,
+      title: problem.title,
+      slug: problem.title.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, ''),
+      difficulty: problem.difficulty,
+      topics: [problem.category, ...problem.algorithms],
+      algorithms: problem.algorithms,
+      description: problem.description,
+      examples: problem.examples.map(example => {
+        const lines = example.split('\n');
+        const input = lines.find(line => line.includes('Input:'))?.replace('Input:', '').trim() || '';
+        const output = lines.find(line => line.includes('Output:'))?.replace('Output:', '').trim() || '';
+        const explanation = lines.find(line => line.includes('Explanation:'))?.replace('Explanation:', '').trim() || '';
+        return { input, output, explanation };
+      }),
+      constraints: problem.constraints,
+      editorial: {
+        approach: problem.solutions[0] || 'Standard approach',
+        timeComplexity: problem.timeComplexity,
+        spaceComplexity: problem.spaceComplexity,
+        solutions: problem.solutions.map((solution, index) => ({
+          name: `Solution ${index + 1}`,
+          description: solution,
+          code: `// ${solution}\n// Implementation would go here`,
+          explanation: solution
+        }))
+      },
+      leetcodeUrl: problem.leetcodeUrl
+    };
   }
 
   /**
@@ -77,7 +112,7 @@ export class ProblemGenerator {
         yoloProblems.push(shuffled[randomIndex]);
       }
       
-      return yoloProblems;
+      return yoloProblems.map(p => this.convertToLeetCodeProblem(p));
     }
 
     // Normal mode - apply filters
@@ -89,7 +124,7 @@ export class ProblemGenerator {
     // Filter by topics
     if (config.topics && config.topics.length > 0) {
       filteredProblems = filteredProblems.filter(p => 
-        config.topics!.some((topic: string) => p.topics.includes(topic))
+        config.topics!.some((topic: string) => p.category === topic || p.algorithms.includes(topic))
       );
     }
 
@@ -103,7 +138,7 @@ export class ProblemGenerator {
     // Exclude solved problems
     if (config.excludeSolved && config.solvedProblems) {
       filteredProblems = filteredProblems.filter(p => 
-        !config.solvedProblems!.includes(p.slug)
+        !config.solvedProblems!.includes(p.title.toLowerCase().replace(/\s+/g, '-'))
       );
     }
 
@@ -111,7 +146,7 @@ export class ProblemGenerator {
     const shuffled = this.shuffleArray([...filteredProblems]);
     const count = config.count || 10;
     
-    return shuffled.slice(0, Math.min(count, shuffled.length));
+    return shuffled.slice(0, Math.min(count, shuffled.length)).map(p => this.convertToLeetCodeProblem(p));
   }
 
   /**
@@ -138,7 +173,7 @@ export class ProblemGenerator {
       title: `${pathName} Learning Path`,
       description: `A comprehensive learning path for ${pathName.toLowerCase()} covering fundamental concepts to advanced techniques.`,
       difficulty,
-      problems: sortedProblems.slice(0, 20), // Limit to 20 problems
+      problems: sortedProblems.slice(0, 20).map(p => this.convertToLeetCodeProblem(p)), // Limit to 20 problems
       estimatedTime: this.calculateEstimatedTime(sortedProblems.slice(0, 20)),
       prerequisites: this.getPrerequisites(difficulty),
       learningObjectives: this.getLearningObjectives(pathName, difficulty)
@@ -149,7 +184,7 @@ export class ProblemGenerator {
    * Generate topic-specific problem sets
    */
   generateTopicSet(topic: string, difficulty?: 'Easy' | 'Medium' | 'Hard'): ProblemSet {
-    let problems = this.allProblems.filter(p => p.topics.includes(topic));
+    let problems = this.allProblems.filter(p => p.category === topic || p.algorithms.includes(topic));
     
     if (difficulty) {
       problems = problems.filter(p => p.difficulty === difficulty);
@@ -166,7 +201,7 @@ export class ProblemGenerator {
       title: `${topic} Problems`,
       description: `A curated collection of ${topic.toLowerCase()} problems to master this topic.`,
       difficulty: this.getDifficultyLevel(problems),
-      problems: problems.slice(0, 15),
+      problems: problems.slice(0, 15).map(p => this.convertToLeetCodeProblem(p)),
       estimatedTime: this.calculateEstimatedTime(problems.slice(0, 15)),
       prerequisites: [],
       learningObjectives: [`Master ${topic} concepts`, `Practice ${topic} algorithms`, `Build problem-solving skills`]
@@ -194,7 +229,7 @@ export class ProblemGenerator {
       title: `${algorithm} Algorithm Practice`,
       description: `Practice problems specifically designed to master the ${algorithm} algorithm.`,
       difficulty: this.getDifficultyLevel(problems),
-      problems: problems.slice(0, 12),
+      problems: problems.slice(0, 12).map(p => this.convertToLeetCodeProblem(p)),
       estimatedTime: this.calculateEstimatedTime(problems.slice(0, 12)),
       prerequisites: [],
       learningObjectives: [`Master ${algorithm} algorithm`, `Understand implementation details`, `Apply to real problems`]
@@ -216,17 +251,17 @@ export class ProblemGenerator {
     const medium = shuffled.find(p => p.difficulty === 'Medium');
     const hard = shuffled.find(p => p.difficulty === 'Hard');
     
-    return [easy, medium, hard].filter(Boolean) as LeetCodeProblem[];
+    return [easy, medium, hard].filter(Boolean).map(p => this.convertToLeetCodeProblem(p!));
   }
 
   /**
    * Generate weekly focus area
    */
   generateWeeklyFocus(): ProblemSet {
-    const topics = ['Array', 'String', 'Tree', 'Dynamic Programming', 'Graph', 'Linked List'];
-    const randomTopic = topics[Math.floor(Math.random() * topics.length)];
+    const categories = ['Array', 'String', 'Tree', 'Dynamic Programming', 'Graph', 'Linked List'];
+    const randomCategory = categories[Math.floor(Math.random() * categories.length)];
     
-    return this.generateTopicSet(randomTopic);
+    return this.generateTopicSet(randomCategory);
   }
 
   /**
@@ -239,27 +274,27 @@ export class ProblemGenerator {
   ): LeetCodeProblem[] {
     // Find problems in weak areas
     let recommendations = this.allProblems.filter(p => 
-      weakAreas.some(area => p.topics.includes(area) || p.algorithms.includes(area))
+      weakAreas.some(area => p.category === area || p.algorithms.includes(area))
     );
 
     // Filter by difficulty
     recommendations = recommendations.filter(p => p.difficulty === targetDifficulty);
 
     // Exclude already solved problems
-    recommendations = recommendations.filter(p => !solvedProblems.includes(p.slug));
+    recommendations = recommendations.filter(p => !solvedProblems.includes(p.title.toLowerCase().replace(/\s+/g, '-')));
 
     // Sort by relevance (more matching weak areas = higher priority)
     recommendations.sort((a, b) => {
       const aScore = weakAreas.filter(area => 
-        a.topics.includes(area) || a.algorithms.includes(area)
+        a.category === area || a.algorithms.includes(area)
       ).length;
       const bScore = weakAreas.filter(area => 
-        b.topics.includes(area) || b.algorithms.includes(area)
+        b.category === area || b.algorithms.includes(area)
       ).length;
       return bScore - aScore;
     });
 
-    return recommendations.slice(0, 10);
+    return recommendations.slice(0, 10).map(p => this.convertToLeetCodeProblem(p));
   }
 
   /**
@@ -268,7 +303,8 @@ export class ProblemGenerator {
   getAllTopics(): string[] {
     const topics = new Set<string>();
     this.allProblems.forEach(p => {
-      p.topics.forEach(topic => topics.add(topic));
+      topics.add(p.category);
+      p.algorithms.forEach(algorithm => topics.add(algorithm));
     });
     return Array.from(topics).sort();
   }
@@ -295,18 +331,20 @@ export class ProblemGenerator {
         Medium: this.allProblems.filter(p => p.difficulty === 'Medium').length,
         Hard: this.allProblems.filter(p => p.difficulty === 'Hard').length
       },
-      byTopic: {} as Record<string, number>,
+      byCategory: {} as Record<string, number>,
       byAlgorithm: {} as Record<string, number>
     };
 
-    // Count by topic
-    this.getAllTopics().forEach(topic => {
-      stats.byTopic[topic] = this.allProblems.filter(p => p.topics.includes(topic)).length;
+    // Count by category
+    this.allProblems.forEach(problem => {
+      stats.byCategory[problem.category] = (stats.byCategory[problem.category] || 0) + 1;
     });
 
     // Count by algorithm
-    this.getAllAlgorithms().forEach(algorithm => {
-      stats.byAlgorithm[algorithm] = this.allProblems.filter(p => p.algorithms.includes(algorithm)).length;
+    this.allProblems.forEach(problem => {
+      problem.algorithms.forEach(algorithm => {
+        stats.byAlgorithm[algorithm] = (stats.byAlgorithm[algorithm] || 0) + 1;
+      });
     });
 
     return stats;
@@ -334,7 +372,7 @@ export class ProblemGenerator {
     return shuffled;
   }
 
-  private calculateEstimatedTime(problems: LeetCodeProblem[]): number {
+  private calculateEstimatedTime(problems: ComprehensiveProblem[]): number {
     const timePerProblem: Record<string, number> = {
       'Easy': 15,
       'Medium': 30,
@@ -346,7 +384,7 @@ export class ProblemGenerator {
     }, 0);
   }
 
-  private getDifficultyLevel(problems: LeetCodeProblem[]): 'Beginner' | 'Intermediate' | 'Advanced' {
+  private getDifficultyLevel(problems: ComprehensiveProblem[]): 'Beginner' | 'Intermediate' | 'Advanced' {
     if (problems.length === 0) return 'Beginner';
     
     const difficulties = problems.map(p => p.difficulty);

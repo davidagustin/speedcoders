@@ -1,7 +1,9 @@
 import { useState, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { allLeetcodeProblems, algorithmCategories, companyTags, difficultyStats } from '../data/allProblems';
 
 function ProblemBrowser({ user }) {
+  const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
   const [filters, setFilters] = useState({
     difficulty: 'all',
@@ -126,9 +128,19 @@ function ProblemBrowser({ user }) {
     }
     
     const selectedProblemsList = Array.from(selectedProblems);
+    const selectedProblemsData = allLeetcodeProblems.filter(p => 
+      selectedProblems.has(p.id)
+    );
+    
     // Navigate to quiz with custom problems
-    // This would be implemented in the Quiz component
-    console.log('Creating custom quiz with problems:', selectedProblemsList);
+    navigate('/quiz', { 
+      state: { 
+        mode: 'custom', 
+        customProblems: selectedProblemsData,
+        questionCount: selectedProblems.size,
+        timeLimit: selectedProblems.size * 60 // 1 minute per problem
+      } 
+    });
   };
 
   const ProblemCard = ({ problem, isSelected, onToggleSelect }) => {

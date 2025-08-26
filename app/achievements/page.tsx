@@ -5,7 +5,7 @@ import {
   TrophyIcon, 
   StarIcon,
   FireIcon,
-  LightningBoltIcon,
+  BoltIcon as LightningBoltIcon,
   AcademicCapIcon,
   PuzzlePieceIcon,
   ClockIcon,

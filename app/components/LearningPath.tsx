@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { createClient } from '@/utils/supabase/client'
-import { comprehensiveProblems } from '@/lib/data/problems'
+import { comprehensiveProblems } from '@/lib/data/comprehensive-problems'
 import Link from 'next/link'
 
 interface LearningPathProblem {

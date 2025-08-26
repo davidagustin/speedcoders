@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/app/lib/prisma';
-import { comprehensiveProblems } from '@/lib/data/problems';
+import { comprehensiveProblems } from '@/lib/data/comprehensive-problems';
 
 export async function POST(request: Request) {
   try {

@@ -27,6 +27,17 @@ export interface LeetCodeProblem {
   leetcodeUrl?: string;
 }
 
+export const problems = [
+  {
+    id: 1,
+    title: "Two Sum",
+    difficulty: "Easy" as const,
+    algorithms: ["Hash Table"],
+    correctAlgorithms: ["Hash Table"],
+    description: "Find two numbers that add up to target"
+  }
+];
+
 export const comprehensiveProblems = [
   {
     id: 1,

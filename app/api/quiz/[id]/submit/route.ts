@@ -15,7 +15,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
   try {
     const session = await getServerSession(authOptions);
     
-    if (!session?.user?.id) {
+    if (!session?.user?.email) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
@@ -35,11 +35,11 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
       return NextResponse.json({ error: 'Quiz not found' }, { status: 404 });
     }
 
-    if (quiz.userId !== session.user.id) {
+    if (quiz.createdBy !== (session.user?.email || 'anonymous')) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
     }
 
-    if (quiz.status !== 'active') {
+    if (!quiz.isActive) {
       return NextResponse.json({ error: 'Quiz is not active' }, { status: 400 });
     }
 
@@ -99,7 +99,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
     const result = await prisma.quizResult.create({
       data: {
         quizId: id,
-        userId: session.user.id,
+        userId: session.user.email,
         score: scorePercentage,
         correctAnswers,
         totalQuestions: problems.length,

@@ -2,7 +2,6 @@ import { createClient } from '@/utils/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { redis, CACHE_KEYS, CACHE_TTL } from '@/utils/redis'
-import QuizCreatorWrapper from '@/app/components/QuizCreatorWrapper'
 
 export default async function LeetCodePage() {
   const supabase = await createClient()
