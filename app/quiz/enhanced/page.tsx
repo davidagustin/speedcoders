@@ -137,7 +137,7 @@ export default function EnhancedQuizPage() {
 	};
 
 	const handleNext = () => {
-		if (currentQuestionIndex < quiz?.questions.length - 1) {
+		if (currentQuestionIndex < (quiz?.questions?.length || 0) - 1) {
 			setCurrentQuestionIndex(currentQuestionIndex + 1);
 		}
 	};
@@ -533,7 +533,7 @@ export default function EnhancedQuizPage() {
 							))}
 						</div>
 
-						{currentQuestionIndex === quiz.questions.length - 1 ? (
+						{currentQuestionIndex === (quiz?.questions?.length || 0) - 1 ? (
 							<button onClick={handleSubmit} className="btn-primary">
 								Submit Quiz
 							</button>
