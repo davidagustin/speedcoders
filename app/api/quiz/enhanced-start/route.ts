@@ -1,198 +1,213 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { PrismaClient } from '@prisma/client'
-import { editorialProblems } from '@/app/lib/editorial-problems'
-
-const prisma = new PrismaClient()
+import { NextResponse } from "next/server";
+import { prisma } from "@/app/lib/prisma";
+import { comprehensiveProblems } from "@/lib/data/comprehensive-problems";
 
 interface QuizConfig {
-  difficulty?: 'Easy' | 'Medium' | 'Hard' | 'Mixed'
-  category?: string
-  problemCount?: number
-  includeHints?: boolean
-  includeSolutions?: boolean
-  timeLimit?: number
-  specificProblems?: string[]
+	userId: string;
+	problemCount?: number;
+	difficulty?: string;
+	category?: string;
+	includeSolutions?: boolean;
+	includeHints?: boolean;
+	timeLimit?: number;
 }
 
-export async function POST(request: NextRequest) {
-  try {
-    const body = await request.json()
-    const { userId, config }: { userId: string; config: QuizConfig } = body
+export async function POST(request: Request) {
+	try {
+		const config: QuizConfig = await request.json();
+		const {
+			userId,
+			problemCount = 10,
+			difficulty = "Mixed",
+			category = null,
+			includeSolutions = false,
+			includeHints = false,
+			timeLimit = 30,
+		} = config;
 
-    let selectedProblems = editorialProblems
+		if (!userId) {
+			return NextResponse.json({ error: "User ID required" }, { status: 400 });
+		}
 
-    // Filter by specific problems if provided
-    if (config.specificProblems && config.specificProblems.length > 0) {
-      selectedProblems = selectedProblems.filter(problem => 
-        config.specificProblems!.includes(problem.title)
-      )
-    } else {
-      // Filter by difficulty
-      if (config.difficulty && config.difficulty !== 'Mixed') {
-        selectedProblems = selectedProblems.filter(problem => 
-          problem.difficulty === config.difficulty
-        )
-      }
+		// Filter problems based on criteria
+		let filteredProblems = comprehensiveProblems;
 
-      // Filter by category
-      if (config.category) {
-        selectedProblems = selectedProblems.filter(problem => 
-          problem.category === config.category
-        )
-      }
-    }
+		if (difficulty !== "Mixed") {
+			filteredProblems = filteredProblems.filter(
+				(p) => p.difficulty === difficulty,
+			);
+		}
 
-    // Shuffle and limit problems
-    const shuffled = selectedProblems.sort(() => Math.random() - 0.5)
-    const problemCount = config.problemCount || Math.min(10, shuffled.length)
-    const finalProblems = shuffled.slice(0, problemCount)
+		if (category) {
+			filteredProblems = filteredProblems.filter((p) =>
+				p.algorithms.includes(category),
+			);
+		}
 
-    // Calculate time limit if not provided
-    const timeLimit = config.timeLimit || Math.max(15, problemCount * 2)
+		// Shuffle and select problems
+		const shuffled = filteredProblems.sort(() => Math.random() - 0.5);
+		const selectedProblems = shuffled.slice(
+			0,
+			Math.min(problemCount, shuffled.length),
+		);
 
-    // Create quiz in database
-    const quiz = await prisma.quiz.create({
-      data: {
-        userId,
-        title: `Quiz - ${config.difficulty || 'Mixed'} ${config.category || 'All Categories'} (${problemCount} problems)`,
-        difficulty: config.difficulty || 'Mixed',
-        category: config.category || 'Mixed',
-        timeLimit,
-        totalQuestions: problemCount,
-        includeHints: config.includeHints || false,
-        includeSolutions: config.includeSolutions || false,
-        status: 'in_progress',
-        startedAt: new Date()
-      }
-    })
+		if (selectedProblems.length === 0) {
+			return NextResponse.json(
+				{ error: "No problems found matching criteria" },
+				{ status: 400 },
+			);
+		}
 
-    // Upsert problems and create quiz questions
-    const quizQuestions = []
-    for (const problem of finalProblems) {
-      const dbProblem = await prisma.problem.upsert({
-        where: { title: problem.title },
-        update: {},
-        create: {
-          title: problem.title,
-          difficulty: problem.difficulty,
-          category: problem.category,
-          description: problem.description,
-          examples: JSON.stringify(problem.examples),
-          constraints: JSON.stringify(problem.constraints),
-          solutions: JSON.stringify(problem.solutions),
-          hints: JSON.stringify(problem.hints),
-          keyInsights: JSON.stringify(problem.keyInsights),
-          relatedProblems: JSON.stringify(problem.relatedProblems),
-          leetcodeUrl: problem.leetcodeUrl
-        }
-      })
+		// Transform problems for quiz format
+		const quizProblems = selectedProblems.map((p) => ({
+			id: p.id,
+			title: p.title,
+			difficulty: p.difficulty,
+			category: p.algorithms[0] || "General",
+			description: p.description,
+			examples: (p as any).examples || [],
+			constraints: (p as any).constraints || [],
+			solutions: includeSolutions ? p.editorial?.solutions || [] : [],
+			hints: includeHints ? [] : [], // No hints available in current structure
+			keyInsights: p.algorithms, // Use algorithms as key insights
+			editorial: p.editorial,
+			leetcodeUrl: p.leetcodeUrl,
+		}));
 
-      const quizQuestion = await prisma.quizQuestion.create({
-        data: {
-          quizId: quiz.id,
-          problemId: dbProblem.id,
-          questionNumber: quizQuestions.length + 1,
-          userAnswer: null,
-          isCorrect: null,
-          timeSpent: 0
-        }
-      })
+		// Create quiz in database
+		const quiz = await prisma.quiz.create({
+			data: {
+				title: `Enhanced Quiz - ${selectedProblems.length} problems`,
+				description: `Quiz with ${selectedProblems.length} problems`,
+				difficulty: difficulty,
+				category: category,
+				timeLimit: timeLimit * 60, // Convert to seconds
+				createdBy: userId,
+				isActive: true,
+			},
+		});
 
-      quizQuestions.push(quizQuestion)
-    }
+		// Create quiz questions
+		for (let i = 0; i < selectedProblems.length; i++) {
+			await prisma.quizQuestion.create({
+				data: {
+					quizId: quiz.id,
+					problemId: selectedProblems[i].id,
+					order: i + 1,
+				},
+			});
+		}
 
-    return NextResponse.json({
-      success: true,
-      quiz: {
-        id: quiz.id,
-        title: quiz.title,
-        difficulty: quiz.difficulty,
-        category: quiz.category,
-        timeLimit: quiz.timeLimit,
-        totalQuestions: quiz.totalQuestions,
-        includeHints: quiz.includeHints,
-        includeSolutions: quiz.includeSolutions,
-        problems: finalProblems.map((problem, index) => ({
-          ...problem,
-          questionNumber: index + 1
-        }))
-      }
-    })
-  } catch (error) {
-    console.error('Error creating enhanced quiz:', error)
-    return NextResponse.json(
-      { success: false, error: 'Failed to create quiz' },
-      { status: 500 }
-    )
-  }
+		// Create quiz attempt
+		const attempt = await prisma.quizAttempt.create({
+			data: {
+				userId: userId,
+				quizId: quiz.id,
+				score: 0,
+				timeSpent: 0,
+				completed: false,
+				startedAt: new Date(),
+				completedAt: null,
+			},
+		});
+
+		return NextResponse.json({
+			success: true,
+			attempt: {
+				id: attempt.id,
+				quiz: {
+					id: quiz.id,
+					title: quiz.title,
+					problemCount: selectedProblems.length,
+				},
+				problems: quizProblems,
+			},
+		});
+	} catch (error) {
+		console.error("Error creating enhanced quiz:", error);
+		return NextResponse.json(
+			{ error: "Failed to create quiz" },
+			{ status: 500 },
+		);
+	}
 }
 
-export async function GET() {
-  try {
-    // Get available quiz configurations
-    const difficulties = ['Easy', 'Medium', 'Hard', 'Mixed']
-    const categories = Array.from(new Set(editorialProblems.map(p => p.category)))
-    
-    const quizTemplates = [
-      {
-        name: 'Beginner Friendly',
-        config: {
-          difficulty: 'Easy',
-          problemCount: 8,
-          timeLimit: 25,
-          includeHints: true,
-          includeSolutions: true
-        }
-      },
-      {
-        name: 'Balanced Practice',
-        config: {
-          difficulty: 'Mixed',
-          problemCount: 12,
-          timeLimit: 35,
-          includeHints: true,
-          includeSolutions: false
-        }
-      },
-      {
-        name: 'Advanced Challenge',
-        config: {
-          difficulty: 'Hard',
-          problemCount: 10,
-          timeLimit: 40,
-          includeHints: false,
-          includeSolutions: false
-        }
-      },
-      {
-        name: 'Speed Practice',
-        config: {
-          difficulty: 'Easy',
-          problemCount: 15,
-          timeLimit: 20,
-          includeHints: false,
-          includeSolutions: false
-        }
-      }
-    ]
+export async function GET(request: Request) {
+	try {
+		const { searchParams } = new URL(request.url);
+		const _difficulty = searchParams.get("difficulty");
+		const _category = searchParams.get("category");
 
-    return NextResponse.json({
-      success: true,
-      difficulties,
-      categories,
-      quizTemplates,
-      totalProblems: editorialProblems.length,
-      problemBreakdown: {
-        easy: editorialProblems.filter(p => p.difficulty === 'Easy').length,
-        medium: editorialProblems.filter(p => p.difficulty === 'Medium').length,
-        hard: editorialProblems.filter(p => p.difficulty === 'Hard').length
-      }
-    })
-  } catch (error) {
-    console.error('Error getting quiz configurations:', error)
-    return NextResponse.json(
-      { success: false, error: 'Failed to get configurations' },
-      { status: 500 }
-    )
-  }
+		// Get available quiz configurations
+		const configurations = [
+			{
+				name: "Quick Practice",
+				difficulty: "Easy" as const,
+				problemCount: 5,
+				timeLimit: 15,
+				description: "5 easy problems, 15 minutes",
+			},
+			{
+				name: "Study Session",
+				difficulty: "Mixed" as const,
+				problemCount: 10,
+				timeLimit: 25,
+				description: "10 mixed problems, 25 minutes",
+			},
+			{
+				name: "Challenge Mode",
+				difficulty: "Hard" as const,
+				problemCount: 8,
+				timeLimit: 40,
+				description: "8 hard problems, 40 minutes",
+			},
+			{
+				name: "Category Focus",
+				difficulty: "Mixed" as const,
+				problemCount: 12,
+				timeLimit: 30,
+				description: "12 problems from specific category",
+			},
+		];
+
+		// Get available difficulties and categories
+		const difficulties = ["Easy", "Medium", "Hard", "Mixed"];
+		const categories = [
+			...new Set(comprehensiveProblems.map((p) => p.category)),
+		].sort();
+
+		// Get problem counts
+		const problemCounts = {
+			total: comprehensiveProblems.length,
+			easy: comprehensiveProblems.filter((p) => p.difficulty === "Easy").length,
+			medium: comprehensiveProblems.filter((p) => p.difficulty === "Medium")
+				.length,
+			hard: comprehensiveProblems.filter((p) => p.difficulty === "Hard").length,
+			byCategory: categories.reduce(
+				(acc, cat) => {
+					acc[cat] = comprehensiveProblems.filter(
+						(p) => p.category === cat,
+					).length;
+					return acc;
+				},
+				{} as Record<string, number>,
+			),
+		};
+
+		return NextResponse.json({
+			success: true,
+			data: {
+				configurations,
+				difficulties,
+				categories,
+				problemCounts,
+			},
+		});
+	} catch (error) {
+		console.error("Error fetching quiz configurations:", error);
+		return NextResponse.json(
+			{ error: "Failed to fetch quiz configurations" },
+			{ status: 500 },
+		);
+	}
 }

@@ -1,28 +1,28 @@
 {
-  "name": "leetcode-scraper",
-  "version": "1.0.0",
-  "description": "A comprehensive LeetCode problem scraper",
-  "main": "leetcode-scraper.js",
-  "scripts": {
-    "start": "node leetcode-scraper.js",
-    "scrape": "node leetcode-scraper.js",
-    "test": "node test-scraper.js"
-  },
-  "dependencies": {
-    "puppeteer": "^21.0.0",
-    "cheerio": "^1.0.0-rc.12",
-    "axios": "^1.6.0"
-  },
-  "devDependencies": {
-    "nodemon": "^3.0.0"
-  },
-  "keywords": [
-    "leetcode",
-    "scraper",
-    "puppeteer",
-    "problems",
-    "coding"
-  ],
-  "author": "Your Name",
-  "license": "MIT"
+	"name": "leetcode-scraper",
+	"version": "1.0.0",
+	"description": "A comprehensive LeetCode problem scraper",
+	"main": "leetcode-scraper.js",
+	"scripts": {
+		"start": "node leetcode-scraper.js",
+		"scrape": "node leetcode-scraper.js",
+		"test": "node test-scraper.js"
+	},
+	"dependencies": {
+		"puppeteer": "^21.0.0",
+		"cheerio": "^1.0.0-rc.12",
+		"axios": "^1.6.0"
+	},
+	"devDependencies": {
+		"nodemon": "^3.0.0"
+	},
+	"keywords": [
+		"leetcode",
+		"scraper",
+		"puppeteer",
+		"problems",
+		"coding"
+	],
+	"author": "Your Name",
+	"license": "MIT"
 }

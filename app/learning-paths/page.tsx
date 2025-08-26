@@ -1,13 +1,10 @@
-'use client'
-
-import LearningPaths from '@/app/components/LearningPaths'
+"use client";
 
 export default function LearningPathsPage() {
-  return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-        <LearningPaths />
-      </div>
-    </div>
-  )
+	return (
+		<div className="min-h-screen bg-gray-50 p-8">
+			<h1 className="text-3xl font-bold mb-6">Learning Paths</h1>
+			<p className="text-gray-600">Learning paths coming soon...</p>
+		</div>
+	);
 }
