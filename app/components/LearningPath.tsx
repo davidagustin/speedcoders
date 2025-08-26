@@ -286,24 +286,22 @@ export default function LearningPath() {
 			)}
 		</div>
 	);
+}
 
-	async function createQuizWithProblem(problemTitle: string) {
-		try {
-			const response = await apiClient.startQuiz({
-				userId: "current-user",
-				problemCount: 1,
-					difficulty: "Mixed",
-					category: null,
-					specificProblem: problemTitle,
-				}),
-			});
+async function createQuizWithProblem(problemTitle: string) {
+	try {
+		const response = await apiClient.startQuiz({
+			userId: "current-user",
+			problemCount: 1,
+			difficulty: "Mixed",
+			category: null,
+			specificProblem: problemTitle,
+		});
 
-			if (response.ok) {
-				const data = await response.json();
-				window.location.href = `/quiz/${data.attempt.quiz.id}`;
-			}
-		} catch (error) {
-			console.error("Error creating quiz:", error);
+		if (response.success) {
+			window.location.href = `/quiz/${response.data.attempt.quiz.id}`;
 		}
+	} catch (error) {
+		console.error("Error creating quiz:", error);
 	}
 }
