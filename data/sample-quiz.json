@@ -1,0 +1,398 @@
+{
+  "practice": [],
+  "timedChallenge": [],
+  "easy": [
+    {
+      "id": 1939,
+      "title": "Sorting Problem 97",
+      "difficulty": "Easy",
+      "algorithms": [
+        "Dynamic Programming",
+        "String"
+      ],
+      "description": "Problem 1939: Sorting Problem 97. This is a sample description for demonstration purposes.",
+      "agentAssigned": 20,
+      "processed": false
+    },
+    {
+      "id": 1585,
+      "title": "Dynamic Programming Problem 80",
+      "difficulty": "Easy",
+      "algorithms": [
+        "Tree",
+        "Depth-First Search",
+        "Breadth-First Search"
+      ],
+      "description": "Problem 1585: Dynamic Programming Problem 80. This is a sample description for demonstration purposes.",
+      "agentAssigned": 16,
+      "processed": false
+    },
+    {
+      "id": 179,
+      "title": "Sorting Problem 9",
+      "difficulty": "Easy",
+      "algorithms": [
+        "Array",
+        "Hash Table",
+        "Divide and Conquer",
+        "Sorting"
+      ],
+      "description": "Problem 179: Sorting Problem 9. This is a sample description for demonstration purposes.",
+      "agentAssigned": 2,
+      "processed": false
+    },
+    {
+      "id": 852,
+      "title": "Stack Problem 43",
+      "difficulty": "Easy",
+      "algorithms": [
+        "Array",
+        "Dynamic Programming",
+        "Binary Search"
+      ],
+      "description": "Problem 852: Stack Problem 43. This is a sample description for demonstration purposes.",
+      "agentAssigned": 9,
+      "processed": false
+    },
+    {
+      "id": 1755,
+      "title": "Trie Problem 88",
+      "difficulty": "Easy",
+      "algorithms": [
+        "Linked List",
+        "Two Pointers",
+        "Divide and Conquer"
+      ],
+      "description": "Problem 1755: Trie Problem 88. This is a sample description for demonstration purposes.",
+      "agentAssigned": 18,
+      "processed": false
+    },
+    {
+      "id": 1616,
+      "title": "Union Find Problem 81",
+      "difficulty": "Easy",
+      "algorithms": [
+        "Tree",
+        "Depth-First Search",
+        "Breadth-First Search"
+      ],
+      "description": "Problem 1616: Union Find Problem 81. This is a sample description for demonstration purposes.",
+      "agentAssigned": 17,
+      "processed": false
+    },
+    {
+      "id": 1641,
+      "title": "Array Problem 83",
+      "difficulty": "Easy",
+      "algorithms": [
+        "Array",
+        "Two Pointers",
+        "Greedy"
+      ],
+      "description": "Problem 1641: Array Problem 83. This is a sample description for demonstration purposes.",
+      "agentAssigned": 17,
+      "processed": false
+    },
+    {
+      "id": 257,
+      "title": "Backtracking Problem 13",
+      "difficulty": "Easy",
+      "algorithms": [
+        "Hash Table",
+        "String",
+        "Sliding Window"
+      ],
+      "description": "Problem 257: Backtracking Problem 13. This is a sample description for demonstration purposes.",
+      "agentAssigned": 3,
+      "processed": false
+    },
+    {
+      "id": 1715,
+      "title": "Trie Problem 86",
+      "difficulty": "Easy",
+      "algorithms": [
+        "Array",
+        "Binary Search"
+      ],
+      "description": "Problem 1715: Trie Problem 86. This is a sample description for demonstration purposes.",
+      "agentAssigned": 18,
+      "processed": false
+    },
+    {
+      "id": 124,
+      "title": "Graph Problem 7",
+      "difficulty": "Easy",
+      "algorithms": [
+        "Stack",
+        "String"
+      ],
+      "description": "Problem 124: Graph Problem 7. This is a sample description for demonstration purposes.",
+      "agentAssigned": 2,
+      "processed": false
+    }
+  ],
+  "medium": [
+    {
+      "id": 3117,
+      "title": "Backtracking Problem 156",
+      "difficulty": "Medium",
+      "algorithms": [
+        "Array",
+        "Greedy",
+        "Sorting"
+      ],
+      "description": "Problem 3117: Backtracking Problem 156. This is a sample description for demonstration purposes.",
+      "agentAssigned": 32,
+      "processed": false
+    },
+    {
+      "id": 651,
+      "title": "Hash Table Problem 33",
+      "difficulty": "Medium",
+      "algorithms": [
+        "Linked List",
+        "Math",
+        "Recursion"
+      ],
+      "description": "Problem 651: Hash Table Problem 33. This is a sample description for demonstration purposes.",
+      "agentAssigned": 7,
+      "processed": false
+    },
+    {
+      "id": 1,
+      "title": "Array Problem 1",
+      "difficulty": "Medium",
+      "algorithms": [
+        "String",
+        "Two Pointers"
+      ],
+      "description": "Problem 1: Array Problem 1. This is a sample description for demonstration purposes.",
+      "agentAssigned": 1,
+      "processed": false
+    },
+    {
+      "id": 41,
+      "title": "Array Problem 3",
+      "difficulty": "Medium",
+      "algorithms": [
+        "String",
+        "Backtracking"
+      ],
+      "description": "Problem 41: Array Problem 3. This is a sample description for demonstration purposes.",
+      "agentAssigned": 1,
+      "processed": false
+    },
+    {
+      "id": 1689,
+      "title": "Two Pointers Problem 85",
+      "difficulty": "Medium",
+      "algorithms": [
+        "Dynamic Programming",
+        "Combinatorics"
+      ],
+      "description": "Problem 1689: Two Pointers Problem 85. This is a sample description for demonstration purposes.",
+      "agentAssigned": 17,
+      "processed": false
+    },
+    {
+      "id": 84,
+      "title": "Graph Problem 5",
+      "difficulty": "Medium",
+      "algorithms": [
+        "Array",
+        "Hash Table",
+        "Heap",
+        "Sorting",
+        "Counting"
+      ],
+      "description": "Problem 84: Graph Problem 5. This is a sample description for demonstration purposes.",
+      "agentAssigned": 1,
+      "processed": false
+    },
+    {
+      "id": 8,
+      "title": "Binary Search Problem 1",
+      "difficulty": "Medium",
+      "algorithms": [
+        "Tree",
+        "Depth-First Search",
+        "Breadth-First Search"
+      ],
+      "description": "Problem 8: Binary Search Problem 1. This is a sample description for demonstration purposes.",
+      "agentAssigned": 1,
+      "processed": false
+    },
+    {
+      "id": 63,
+      "title": "Tree Problem 4",
+      "difficulty": "Medium",
+      "algorithms": [
+        "Array",
+        "Hash Table",
+        "Heap",
+        "Sorting",
+        "Counting"
+      ],
+      "description": "Problem 63: Tree Problem 4. This is a sample description for demonstration purposes.",
+      "agentAssigned": 1,
+      "processed": false
+    },
+    {
+      "id": 1740,
+      "title": "Linked List Problem 87",
+      "difficulty": "Medium",
+      "algorithms": [
+        "Array",
+        "Dynamic Programming",
+        "Binary Search"
+      ],
+      "description": "Problem 1740: Linked List Problem 87. This is a sample description for demonstration purposes.",
+      "agentAssigned": 18,
+      "processed": false
+    },
+    {
+      "id": 96,
+      "title": "Union Find Problem 5",
+      "difficulty": "Medium",
+      "algorithms": [
+        "Array",
+        "Hash Table",
+        "Stack",
+        "Monotonic Stack"
+      ],
+      "description": "Problem 96: Union Find Problem 5. This is a sample description for demonstration purposes.",
+      "agentAssigned": 1,
+      "processed": false
+    }
+  ],
+  "hard": [
+    {
+      "id": 3217,
+      "title": "Backtracking Problem 161",
+      "difficulty": "Hard",
+      "algorithms": [
+        "Array",
+        "Dynamic Programming",
+        "Greedy"
+      ],
+      "description": "Problem 3217: Backtracking Problem 161. This is a sample description for demonstration purposes.",
+      "agentAssigned": 33,
+      "processed": false
+    },
+    {
+      "id": 3605,
+      "title": "Dynamic Programming Problem 181",
+      "difficulty": "Hard",
+      "algorithms": [
+        "String",
+        "Backtracking"
+      ],
+      "description": "Problem 3605: Dynamic Programming Problem 181. This is a sample description for demonstration purposes.",
+      "agentAssigned": 37,
+      "processed": false
+    },
+    {
+      "id": 3259,
+      "title": "Sorting Problem 163",
+      "difficulty": "Hard",
+      "algorithms": [
+        "Array",
+        "Dynamic Programming",
+        "Greedy"
+      ],
+      "description": "Problem 3259: Sorting Problem 163. This is a sample description for demonstration purposes.",
+      "agentAssigned": 33,
+      "processed": false
+    },
+    {
+      "id": 3002,
+      "title": "String Problem 151",
+      "difficulty": "Hard",
+      "algorithms": [
+        "Array",
+        "Two Pointers",
+        "Greedy"
+      ],
+      "description": "Problem 3002: String Problem 151. This is a sample description for demonstration purposes.",
+      "agentAssigned": 31,
+      "processed": false
+    },
+    {
+      "id": 3278,
+      "title": "Bit Manipulation Problem 164",
+      "difficulty": "Hard",
+      "algorithms": [
+        "Array",
+        "Hash Table",
+        "Two Pointers",
+        "Binary Search",
+        "Sorting"
+      ],
+      "description": "Problem 3278: Bit Manipulation Problem 164. This is a sample description for demonstration purposes.",
+      "agentAssigned": 33,
+      "processed": false
+    },
+    {
+      "id": 604,
+      "title": "Graph Problem 31",
+      "difficulty": "Hard",
+      "algorithms": [
+        "Hash Table",
+        "Array",
+        "Two Pointers"
+      ],
+      "description": "Problem 604: Graph Problem 31. This is a sample description for demonstration purposes.",
+      "agentAssigned": 7,
+      "processed": false
+    },
+    {
+      "id": 222,
+      "title": "String Problem 12",
+      "difficulty": "Hard",
+      "algorithms": [
+        "Tree",
+        "Depth-First Search",
+        "Breadth-First Search"
+      ],
+      "description": "Problem 222: String Problem 12. This is a sample description for demonstration purposes.",
+      "agentAssigned": 3,
+      "processed": false
+    },
+    {
+      "id": 248,
+      "title": "Binary Search Problem 13",
+      "difficulty": "Hard",
+      "algorithms": [
+        "String",
+        "Backtracking"
+      ],
+      "description": "Problem 248: Binary Search Problem 13. This is a sample description for demonstration purposes.",
+      "agentAssigned": 3,
+      "processed": false
+    },
+    {
+      "id": 3142,
+      "title": "String Problem 158",
+      "difficulty": "Hard",
+      "algorithms": [
+        "Tree",
+        "Depth-First Search"
+      ],
+      "description": "Problem 3142: String Problem 158. This is a sample description for demonstration purposes.",
+      "agentAssigned": 32,
+      "processed": false
+    },
+    {
+      "id": 268,
+      "title": "Binary Search Problem 14",
+      "difficulty": "Hard",
+      "algorithms": [
+        "Linked List",
+        "Two Pointers"
+      ],
+      "description": "Problem 268: Binary Search Problem 14. This is a sample description for demonstration purposes.",
+      "agentAssigned": 3,
+      "processed": false
+    }
+  ]
+}
