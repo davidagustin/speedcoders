@@ -8,8 +8,8 @@ import {
 import Link from "next/link";
 import { useSession } from "next-auth/react";
 import { useState } from "react";
-import { Navbar } from "../components/Navbar";
-import { Sidebar } from "../components/Sidebar";
+import { Navbar } from "../../components/Navbar";
+import { Sidebar } from "../../components/Sidebar";
 
 export default function StudyPage() {
 	const { data: session } = useSession();

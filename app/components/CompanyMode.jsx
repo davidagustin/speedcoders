@@ -1,9 +1,10 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { allLeetcodeProblems, companyTags } from "../data/allProblems";
+import { useRouter } from "next/navigation";
+import { allProblems as allLeetcodeProblems } from "@/lib/data/all-batches-index";
+const companyTags = { Google: [], Facebook: [], Amazon: [], Microsoft: [], Apple: [] };
 
 function CompanyMode({ user }) {
-	const navigate = useNavigate();
+	const router = useRouter();
 	const [selectedCompany, setSelectedCompany] = useState(null);
 
 	const companyInfo = {
@@ -106,8 +107,8 @@ function CompanyMode({ user }) {
 	};
 
 	const getUserCompanyProgress = (company) => {
-		const users = JSON.parse(localStorage.getItem("users") || "[]");
-		const currentUser = users.find((u) => u.id === user.id);
+		const users = typeof window !== 'undefined' ? JSON.parse(localStorage.getItem("users") || "[]") : [];
+		const currentUser = users.find((u) => u.id === user?.id);
 
 		if (!currentUser?.scores) return { solved: 0, accuracy: 0 };
 
@@ -138,13 +139,7 @@ function CompanyMode({ user }) {
 	};
 
 	const startCompanyQuiz = (company, mode = "mixed") => {
-		navigate("/quiz", {
-			state: {
-				mode: "company",
-				company,
-				difficulty: mode === "mixed" ? "Mixed" : mode,
-			},
-		});
+		router.push(`/quiz?company=${company}&mode=${mode}`);
 	};
 
 	return (

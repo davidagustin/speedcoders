@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
-import { allLeetcodeProblems } from "../data/allProblems";
+import { allProblems as allLeetcodeProblems } from "@/lib/data/all-batches-index";
 
-function ContestMode({ user }) {
+function ContestMode({ user = {} }) {
 	const [currentContest, setCurrentContest] = useState(null);
 	const [contestHistory, setContestHistory] = useState([]);
 	const [problems, setProblems] = useState([]);
@@ -44,7 +44,7 @@ function ContestMode({ user }) {
 				finishContest(contest);
 			}
 		}
-	}, [finishContest]);
+	}, []);
 
 	useEffect(() => {
 		let timer;
@@ -60,7 +60,7 @@ function ContestMode({ user }) {
 			}, 1000);
 		}
 		return () => clearInterval(timer);
-	}, [currentContest, timeRemaining, contestFinished, finishContest]);
+	}, [currentContest, timeRemaining, contestFinished]);
 
 	useEffect(() => {
 		if (currentContest && !contestFinished) {
@@ -217,7 +217,7 @@ function ContestMode({ user }) {
 
 	const updateUserStats = (contestResult) => {
 		const users = JSON.parse(localStorage.getItem("users") || "[]");
-		const userIndex = users.findIndex((u) => u.id === user.id);
+		const userIndex = users.findIndex((u) => u.id === user?.id);
 
 		if (userIndex !== -1) {
 			users[userIndex].contestStats = users[userIndex].contestStats || {
@@ -568,7 +568,7 @@ function ContestMode({ user }) {
 				</div>
 			)}
 
-			{user.contestStats && (
+			{user?.contestStats && (
 				<div className="user-contest-stats">
 					<h3>🎯 Your Contest Statistics</h3>
 					<div className="stats-grid">
@@ -576,7 +576,7 @@ function ContestMode({ user }) {
 							<div className="stat-icon">🏁</div>
 							<div className="stat-info">
 								<span className="stat-value">
-									{user.contestStats.totalContests}
+									{user?.contestStats?.totalContests || 0}
 								</span>
 								<span className="stat-label">Total Contests</span>
 							</div>
@@ -585,7 +585,7 @@ function ContestMode({ user }) {
 							<div className="stat-icon">⭐</div>
 							<div className="stat-info">
 								<span className="stat-value">
-									{user.contestStats.totalScore}
+									{user?.contestStats?.totalScore || 0}
 								</span>
 								<span className="stat-label">Total Score</span>
 							</div>
@@ -595,9 +595,9 @@ function ContestMode({ user }) {
 							<div className="stat-info">
 								<span
 									className="stat-value"
-									style={{ color: getRankColor(user.contestStats.bestRank) }}
+									style={{ color: getRankColor(user?.contestStats?.bestRank || 'Unranked') }}
 								>
-									{user.contestStats.bestRank}
+									{user?.contestStats?.bestRank || 'Unranked'}
 								</span>
 								<span className="stat-label">Best Rank</span>
 							</div>
@@ -606,7 +606,7 @@ function ContestMode({ user }) {
 							<div className="stat-icon">🎯</div>
 							<div className="stat-info">
 								<span className="stat-value">
-									{user.contestStats.averageAccuracy.toFixed(1)}%
+									{(user?.contestStats?.averageAccuracy || 0).toFixed(1)}%
 								</span>
 								<span className="stat-label">Average Accuracy</span>
 							</div>

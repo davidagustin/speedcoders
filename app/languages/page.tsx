@@ -212,7 +212,7 @@ export default function LanguagesPage() {
 
 	useEffect(() => {
 		checkAuth();
-	}, [checkAuth]);
+	}, []);
 
 	const checkAuth = async () => {
 		const {

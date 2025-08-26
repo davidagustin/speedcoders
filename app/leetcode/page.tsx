@@ -1,7 +1,8 @@
+"use client";
+
+import { useSession } from "next-auth/react";
 import Link from "next/link";
-import { redirect } from "next/navigation";
-import { CACHE_KEYS, CACHE_TTL, redis } from "@/utils/redis";
-import { createClient } from "@/utils/supabase/server";
+import { useState, useEffect } from "react";
 
 interface QuizAttempt {
 	id: string;
@@ -21,61 +22,67 @@ interface Quiz {
 	time_limit: number;
 }
 
-export default async function LeetCodePage() {
-	const supabase = await createClient();
+export default function LeetCodePage() {
+	const { data: session } = useSession();
+	const [availableQuizzes, setAvailableQuizzes] = useState<Quiz[]>([]);
+	const [userProgress, setUserProgress] = useState<QuizAttempt[]>([]);
+	const [loading, setLoading] = useState(true);
 
-	const {
-		data: { user },
-	} = await supabase.auth.getUser();
+	useEffect(() => {
+		if (session) {
+			fetchData();
+		}
+	}, [session]);
 
-	if (!user) {
-		redirect("/auth/login");
+	const fetchData = async () => {
+		try {
+			// Fetch available quizzes
+			const quizzesResponse = await fetch('/api/quiz/enhanced-start');
+			if (quizzesResponse.ok) {
+				const quizzesData = await quizzesResponse.json();
+				setAvailableQuizzes(quizzesData.quizzes || []);
+			}
+
+			// Fetch user progress
+			const progressResponse = await fetch('/api/analytics');
+			if (progressResponse.ok) {
+				const progressData = await progressResponse.json();
+				setUserProgress(progressData.recentAttempts || []);
+			}
+		} catch (error) {
+			console.error('Error fetching data:', error);
+		} finally {
+			setLoading(false);
+		}
+	};
+
+	if (!session) {
+		return (
+			<div className="min-h-screen bg-gray-50 flex items-center justify-center">
+				<div className="text-center">
+					<h1 className="text-2xl font-bold text-gray-900 mb-4">
+						Please sign in to access LeetCode practice
+					</h1>
+					<Link
+						href="/auth/login"
+						className="bg-blue-600 text-white px-6 py-2 rounded-lg cursor-pointer"
+					>
+						Sign In
+					</Link>
+				</div>
+			</div>
+		);
 	}
 
-	// Get available quizzes from cache or database
-	let availableQuizzes: Quiz[] = [];
-	const cachedQuizzes = await redis.get(CACHE_KEYS.QUIZ("available"));
-
-	if (!cachedQuizzes) {
-		const { data: quizzes } = await supabase
-			.from("quizzes")
-			.select("*")
-			.eq("is_active", true)
-			.order("created_at", { ascending: false });
-
-		availableQuizzes = (quizzes as Quiz[]) || [];
-		await redis.setex(
-			CACHE_KEYS.QUIZ("available"),
-			CACHE_TTL.QUIZ,
-			JSON.stringify(availableQuizzes),
+	if (loading) {
+		return (
+			<div className="min-h-screen bg-gray-50 flex items-center justify-center">
+				<div className="text-center">
+					<div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+					<p className="text-gray-600">Loading...</p>
+				</div>
+			</div>
 		);
-	} else {
-		availableQuizzes = JSON.parse(cachedQuizzes as string) as Quiz[];
-	}
-
-	// Get user's recent attempts
-	let userProgress: QuizAttempt[] = [];
-	const cachedProgress = await redis.get(CACHE_KEYS.USER_PROGRESS(user.id));
-
-	if (!cachedProgress) {
-		const { data: attempts } = await supabase
-			.from("quiz_attempts")
-			.select(`
-        *,
-        quiz:quizzes(title, difficulty)
-      `)
-			.eq("user_id", user.id)
-			.order("started_at", { ascending: false })
-			.limit(5);
-
-		userProgress = (attempts as QuizAttempt[]) || [];
-		await redis.setex(
-			CACHE_KEYS.USER_PROGRESS(user.id),
-			CACHE_TTL.USER_PROGRESS,
-			JSON.stringify(userProgress),
-		);
-	} else {
-		userProgress = JSON.parse(cachedProgress as string) as QuizAttempt[];
 	}
 
 	return (

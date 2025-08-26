@@ -48,7 +48,7 @@ export default function ArenaPage() {
 		} else if (timeRemaining === 0 && currentBattle?.status === "active") {
 			endBattle();
 		}
-	}, [currentBattle, timeRemaining, endBattle]);
+	}, [currentBattle, timeRemaining]);
 
 	// Simulate opponent progress
 	useEffect(() => {

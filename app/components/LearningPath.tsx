@@ -22,7 +22,7 @@ export default function LearningPath() {
 
 	useEffect(() => {
 		generateLearningPath();
-	}, [generateLearningPath]);
+	}, []);
 
 	const generateLearningPath = async () => {
 		try {

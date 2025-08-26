@@ -1,7 +1,7 @@
 {
-	"name": "LeetCode Quiz Master",
-	"short_name": "LC Quiz Master",
-	"description": "Master coding interviews with 3,662+ LeetCode problems, algorithm tracking, and FAANG preparation",
+	"name": "SpeedCoders - Algorithm Mastery",
+	"short_name": "SpeedCoders",
+	"description": "Master algorithms and data structures with interactive challenges, real-time feedback, and comprehensive analytics",
 	"version": "1.0.0",
 	"start_url": "/",
 	"display": "standalone",

@@ -44,7 +44,7 @@ export default function LeaderboardPage() {
 
 	useEffect(() => {
 		fetchLeaderboardData();
-	}, [fetchLeaderboardData]);
+	}, []);
 
 	const fetchLeaderboardData = async () => {
 		try {

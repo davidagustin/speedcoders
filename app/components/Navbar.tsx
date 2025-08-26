@@ -30,28 +30,64 @@ export function Navbar() {
 								Dashboard
 							</Link>
 							<Link
-								href="/quiz"
+								href="/practice"
 								className="text-gray-700 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium cursor-pointer"
 							>
-								Quiz
+								Practice
 							</Link>
 							<Link
-								href="/problems"
+								href="/system-design"
 								className="text-gray-700 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium cursor-pointer"
 							>
-								Problems
+								System Design
 							</Link>
 							<Link
-								href="/leetcode"
+								href="/study"
 								className="text-gray-700 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium cursor-pointer"
 							>
-								LeetCode
+								Study
+							</Link>
+							<Link
+								href="/contest"
+								className="text-gray-700 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium cursor-pointer"
+							>
+								Contest
+							</Link>
+							<Link
+								href="/company"
+								className="text-gray-700 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium cursor-pointer"
+							>
+								Companies
+							</Link>
+							<Link
+								href="/algorithms"
+								className="text-gray-700 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium cursor-pointer"
+							>
+								Algorithms
 							</Link>
 							<Link
 								href="/achievements"
 								className="text-gray-700 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium cursor-pointer"
 							>
 								Achievements
+							</Link>
+							<Link
+								href="/analytics"
+								className="text-gray-700 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium cursor-pointer"
+							>
+								Analytics
+							</Link>
+							<Link
+								href="/leaderboard"
+								className="text-gray-700 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium cursor-pointer"
+							>
+								Leaderboard
+							</Link>
+							<Link
+								href="/settings"
+								className="text-gray-700 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium cursor-pointer"
+							>
+								Settings
 							</Link>
 						</div>
 					</div>
@@ -107,28 +143,64 @@ export function Navbar() {
 							Dashboard
 						</Link>
 						<Link
-							href="/quiz"
+							href="/practice"
 							className="block px-3 py-2 text-base font-medium text-gray-700 hover:text-gray-900 cursor-pointer"
 						>
-							Quiz
+							Practice
 						</Link>
 						<Link
-							href="/problems"
+							href="/system-design"
 							className="block px-3 py-2 text-base font-medium text-gray-700 hover:text-gray-900 cursor-pointer"
 						>
-							Problems
+							System Design
 						</Link>
 						<Link
-							href="/leetcode"
+							href="/study"
 							className="block px-3 py-2 text-base font-medium text-gray-700 hover:text-gray-900 cursor-pointer"
 						>
-							LeetCode
+							Study
+						</Link>
+						<Link
+							href="/contest"
+							className="block px-3 py-2 text-base font-medium text-gray-700 hover:text-gray-900 cursor-pointer"
+						>
+							Contest
+						</Link>
+						<Link
+							href="/company"
+							className="block px-3 py-2 text-base font-medium text-gray-700 hover:text-gray-900 cursor-pointer"
+						>
+							Companies
+						</Link>
+						<Link
+							href="/algorithms"
+							className="block px-3 py-2 text-base font-medium text-gray-700 hover:text-gray-900 cursor-pointer"
+						>
+							Algorithms
 						</Link>
 						<Link
 							href="/achievements"
 							className="block px-3 py-2 text-base font-medium text-gray-700 hover:text-gray-900 cursor-pointer"
 						>
 							Achievements
+						</Link>
+						<Link
+							href="/analytics"
+							className="block px-3 py-2 text-base font-medium text-gray-700 hover:text-gray-900 cursor-pointer"
+						>
+							Analytics
+						</Link>
+						<Link
+							href="/leaderboard"
+							className="block px-3 py-2 text-base font-medium text-gray-700 hover:text-gray-900 cursor-pointer"
+						>
+							Leaderboard
+						</Link>
+						<Link
+							href="/settings"
+							className="block px-3 py-2 text-base font-medium text-gray-700 hover:text-gray-900 cursor-pointer"
+						>
+							Settings
 						</Link>
 					</div>
 				</div>

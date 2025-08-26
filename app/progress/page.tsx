@@ -47,7 +47,7 @@ export default function ProgressPage() {
 
 	useEffect(() => {
 		fetchProgressData();
-	}, [fetchProgressData]);
+	}, []);
 
 	const fetchProgressData = async () => {
 		try {

@@ -94,7 +94,7 @@ export default function SocialHub() {
 
 	useEffect(() => {
 		loadSocialData();
-	}, [loadSocialData]);
+	}, []);
 
 	const loadSocialData = async () => {
 		setLoading(true);

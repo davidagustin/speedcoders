@@ -464,7 +464,7 @@ export default function DataStructuresPage() {
 
 	useEffect(() => {
 		checkAuth();
-	}, [checkAuth]);
+	}, []);
 
 	const checkAuth = async () => {
 		const {

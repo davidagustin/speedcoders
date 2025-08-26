@@ -25,7 +25,7 @@ export default function ProblemStats() {
 
 	useEffect(() => {
 		loadStats();
-	}, [loadStats]);
+	}, []);
 
 	const loadStats = async () => {
 		try {

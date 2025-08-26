@@ -153,7 +153,7 @@ export default function AdvancedSearch() {
 
 	useEffect(() => {
 		generateMockProblems();
-	}, [generateMockProblems]);
+	}, []);
 
 	const generateMockProblems = () => {
 		const mockProblems: Problem[] = Array.from({ length: 200 }, (_, index) => ({

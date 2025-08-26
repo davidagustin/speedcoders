@@ -56,7 +56,7 @@ export default function AchievementCenter() {
 	useEffect(() => {
 		loadAchievements();
 		loadUserStats();
-	}, [loadAchievements, loadUserStats]);
+	}, [showSecrets]);
 
 	const loadAchievements = () => {
 		const allAchievements = achievementSystem.getAllAchievements();

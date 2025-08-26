@@ -1,11 +1,10 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/app/lib/prisma";
 import { comprehensiveProblems } from "@/lib/data/comprehensive-problems";
 
 export async function POST(request: Request) {
 	try {
 		const {
-			userId,
+			userId = "demo-user",
 			problemCount = 10,
 			difficulty = "Mixed",
 			category = null,
@@ -60,82 +59,43 @@ export async function POST(request: Request) {
 			);
 		}
 
-		// Create or update problems in database
-		for (const problem of selectedProblems) {
-			await prisma.problem.upsert({
-				where: { title: problem.title },
-				update: {
-					difficulty: problem.difficulty,
-					category: problem.algorithms[0] || "General",
-					description: problem.description,
-					solutions: JSON.stringify(problem.editorial),
-					leetcodeUrl: problem.leetcodeUrl,
-				},
-				create: {
-					title: problem.title,
-					difficulty: problem.difficulty,
-					category: problem.algorithms[0] || "General",
-					description: problem.description,
-					examples: JSON.stringify([]),
-					constraints: JSON.stringify([]),
-					solutions: JSON.stringify(problem.editorial),
-					leetcodeUrl: problem.leetcodeUrl,
-				},
-			});
-		}
+		// Create mock quiz object
+		const quiz = {
+			id: `quiz_${Date.now()}`,
+			title: `Quiz - ${selectedProblems.length} problems`,
+			description: `Quiz with ${selectedProblems.length} problems`,
+			difficulty: difficulty,
+			category: category,
+			timeLimit: selectedProblems.length * 5, // 5 minutes per problem
+			problemCount: selectedProblems.length,
+			problems: selectedProblems.map((p, i) => ({
+				id: i + 1,
+				title: p.title,
+				difficulty: p.difficulty,
+				category: p.category,
+				algorithms: p.algorithms,
+				description: p.description,
+				editorial: p.editorial,
+				leetcodeUrl: p.leetcodeUrl,
+			})),
+		};
 
-		// Create quiz
-		const quiz = await prisma.quiz.create({
-			data: {
-				title: `Quiz - ${selectedProblems.length} problems`,
-				description: `Quiz with ${selectedProblems.length} problems`,
-				difficulty: difficulty,
-				category: category,
-				timeLimit: selectedProblems.length * 5 * 60, // 5 minutes per problem
-				createdBy: userId,
-				isActive: true,
-			},
-		});
-
-		// Create quiz questions
-		for (let i = 0; i < selectedProblems.length; i++) {
-			await prisma.quizQuestion.create({
-				data: {
-					quizId: quiz.id,
-					problemId:
-						(
-							await prisma.problem.findUnique({
-								where: { title: selectedProblems[i].title },
-							})
-						)?.id || 1,
-					order: i + 1,
-				},
-			});
-		}
-
-		// Create quiz attempt
-		const attempt = await prisma.quizAttempt.create({
-			data: {
-				userId: userId,
-				quizId: quiz.id,
-				score: 0,
-				timeSpent: 0,
-				completed: false,
-				startedAt: new Date(),
-				completedAt: null,
-			},
-		});
+		// Create mock attempt
+		const attempt = {
+			id: `attempt_${Date.now()}`,
+			userId: userId,
+			quizId: quiz.id,
+			score: 0,
+			timeSpent: 0,
+			completed: false,
+			startedAt: new Date().toISOString(),
+			completedAt: null,
+		};
 
 		return NextResponse.json({
 			success: true,
-			attempt: {
-				id: attempt.id,
-				quiz: {
-					id: quiz.id,
-					title: quiz.title,
-					problemCount: selectedProblems.length,
-				},
-			},
+			attempt,
+			quiz,
 		});
 	} catch (error) {
 		console.error("Error creating quiz:", error);

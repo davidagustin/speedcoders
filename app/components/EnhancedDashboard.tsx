@@ -73,7 +73,7 @@ export default function EnhancedDashboard() {
 
 	useEffect(() => {
 		fetchDashboardData();
-	}, [fetchDashboardData]);
+	}, []);
 
 	const fetchDashboardData = async () => {
 		try {

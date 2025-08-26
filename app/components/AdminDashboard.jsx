@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
-import { algorithmCategories, allLeetcodeProblems } from "../data/allProblems";
+import { allProblems as allLeetcodeProblems } from "@/lib/data/all-batches-index";
+const algorithmCategories = ["Arrays", "Strings", "Hash Table", "Dynamic Programming", "Trees", "Graphs", "Backtracking", "Greedy"];
 
 function AdminDashboard({ user }) {
 	const [activeTab, setActiveTab] = useState("overview");

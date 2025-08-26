@@ -1,24 +1,27 @@
 import { useMemo, useState } from "react";
-import { algorithmCategories, allLeetcodeProblems } from "../data/allProblems";
+import { allProblems as allLeetcodeProblems } from "@/lib/data/all-batches-index";
+const algorithmCategories = ["Arrays", "Strings", "Hash Table", "Dynamic Programming", "Trees", "Graphs", "Backtracking", "Greedy"];
 
-function AlgorithmMastery({ user }) {
+function AlgorithmMastery({ user = {} }) {
 	const [selectedCategory, setSelectedCategory] = useState("all");
 	const [viewMode, setViewMode] = useState("grid");
 	const [sortBy, setSortBy] = useState("mastery");
 
 	// Calculate algorithm mastery for the user
 	const algorithmMastery = useMemo(() => {
+		if (typeof window === 'undefined') return {};
 		const users = JSON.parse(localStorage.getItem("users") || "[]");
-		const currentUser = users.find((u) => u.id === user.id);
+		const currentUser = users.find((u) => u.id === user?.id);
 
-		if (!currentUser?.scores) return {};
+		if (!currentUser?.scores || !Array.isArray(currentUser.scores)) return {};
 
 		const algorithmStats = {};
 
 		currentUser.scores.forEach((score) => {
-			if (score.details) {
+			if (score?.details && Array.isArray(score.details)) {
 				score.details.forEach((detail) => {
-					detail.correctAnswer.forEach((algo) => {
+					if (detail?.correctAnswer && Array.isArray(detail.correctAnswer)) {
+						detail.correctAnswer.forEach((algo) => {
 						if (!algorithmStats[algo]) {
 							algorithmStats[algo] = {
 								total: 0,
@@ -42,16 +45,19 @@ function AlgorithmMastery({ user }) {
 						algorithmStats[algo].lastPracticed = new Date(score.date);
 						algorithmStats[algo].difficulty[detail.difficulty]++;
 					});
+					}
 				});
 			}
 		});
 
 		// Add total problems available for each algorithm
-		Object.keys(algorithmStats).forEach((algo) => {
+		if (algorithmStats && typeof algorithmStats === 'object') {
+			Object.keys(algorithmStats).forEach((algo) => {
 			algorithmStats[algo].totalProblems = allLeetcodeProblems.filter((p) =>
-				p.correctAlgorithms.includes(algo),
+				p.algorithms && p.algorithms.includes(algo),
 			).length;
 		});
+		}
 
 		return algorithmStats;
 	}, [user]);
@@ -82,7 +88,9 @@ function AlgorithmMastery({ user }) {
 		// Add algorithms user hasn't practiced yet
 		const allAlgorithms = new Set();
 		allLeetcodeProblems.forEach((p) => {
-			p.correctAlgorithms.forEach((algo) => allAlgorithms.add(algo));
+			if (p.algorithms && Array.isArray(p.algorithms)) {
+				p.algorithms.forEach((algo) => allAlgorithms.add(algo));
+			}
 		});
 
 		Array.from(allAlgorithms).forEach((algo) => {
@@ -96,7 +104,7 @@ function AlgorithmMastery({ user }) {
 						lastPracticed: null,
 						difficulty: { Easy: 0, Medium: 0, Hard: 0 },
 						totalProblems: allLeetcodeProblems.filter((p) =>
-							p.correctAlgorithms.includes(algo),
+							p.algorithms && p.algorithms.includes(algo),
 						).length,
 					},
 				]);
@@ -139,7 +147,9 @@ function AlgorithmMastery({ user }) {
 		const practiced = Object.keys(algorithmMastery).length;
 		const totalAlgorithms = new Set();
 		allLeetcodeProblems.forEach((p) => {
-			p.correctAlgorithms.forEach((algo) => totalAlgorithms.add(algo));
+			if (p.algorithms && Array.isArray(p.algorithms)) {
+				p.algorithms.forEach((algo) => totalAlgorithms.add(algo));
+			}
 		});
 
 		const masteryLevels = {

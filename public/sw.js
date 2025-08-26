@@ -1,16 +1,34 @@
-// Service Worker for LeetCode Quiz Master PWA
-const CACHE_NAME = "leetcode-quiz-master-v1.0.0";
-const STATIC_CACHE = "leetcode-quiz-static-v1.0.0";
-const RUNTIME_CACHE = "leetcode-quiz-runtime-v1.0.0";
+// Enhanced Service Worker for SpeedCoders PWA
+const CACHE_VERSION = 'v2.0.0';
+const STATIC_CACHE = `speedcoders-static-${CACHE_VERSION}`;
+const DYNAMIC_CACHE = `speedcoders-dynamic-${CACHE_VERSION}`;
+const API_CACHE = `speedcoders-api-${CACHE_VERSION}`;
 
-// Files to cache on install
+// Resources to cache immediately
 const STATIC_FILES = [
 	"/",
-	"/index.html",
+	"/dashboard",
+	"/quiz", 
+	"/problems",
 	"/manifest.json",
+	"/offline",
 	"/icons/icon-192x192.png",
 	"/icons/icon-512x512.png",
 ];
+
+// API endpoints to cache
+const API_ENDPOINTS = [
+	"/api/problems",
+	"/api/quiz",
+	"/api/analytics",
+];
+
+// Cache strategies
+const CACHE_STRATEGIES = {
+	CACHE_FIRST: 'cache-first',
+	NETWORK_FIRST: 'network-first',
+	STALE_WHILE_REVALIDATE: 'stale-while-revalidate'
+};
 
 // Install event - cache static files
 self.addEventListener("install", (event) => {

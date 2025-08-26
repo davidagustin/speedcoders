@@ -30,7 +30,7 @@ export default function AchievementsPage() {
 
 	useEffect(() => {
 		fetchAchievements();
-	}, [fetchAchievements]);
+	}, []);
 
 	const fetchAchievements = async () => {
 		try {

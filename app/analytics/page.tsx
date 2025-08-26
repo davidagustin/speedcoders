@@ -59,7 +59,7 @@ export default function AnalyticsPage() {
 
 	useEffect(() => {
 		fetchAnalytics();
-	}, [fetchAnalytics]);
+	}, []);
 
 	const fetchAnalytics = async () => {
 		setLoading(true);

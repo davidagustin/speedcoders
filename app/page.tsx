@@ -1,68 +1,36 @@
 import Link from "next/link";
-import { ArrowRightIcon, AcademicCapIcon, ChartBarIcon, TrophyIcon, ClockIcon } from "@heroicons/react/24/outline";
+import { ArrowRightIcon, AcademicCapIcon, ChartBarIcon, TrophyIcon, ClockIcon, FireIcon, StarIcon, CodeBracketIcon } from "@heroicons/react/24/outline";
 
 export default function HomePage() {
 	return (
 		<div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
-			{/* Navigation */}
-			<nav className="bg-white/80 backdrop-blur-sm border-b border-gray-200 sticky top-0 z-50">
-				<div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-					<div className="flex justify-between items-center h-16">
-						<div className="flex items-center space-x-2">
-							<AcademicCapIcon className="h-8 w-8 text-blue-600" />
-							<span className="text-xl font-bold text-gray-900">SpeedCoders</span>
-						</div>
-						<div className="flex items-center space-x-4">
-							<Link
-								href="/dashboard"
-								className="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium cursor-pointer"
-							>
-								Dashboard
-							</Link>
-							<Link
-								href="/problems"
-								className="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium cursor-pointer"
-							>
-								Problems
-							</Link>
-							<Link
-								href="/quiz"
-								className="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium cursor-pointer"
-							>
-								Quiz
-							</Link>
-							<Link
-								href="/auth/login"
-								className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium cursor-pointer"
-							>
-								Sign In
-							</Link>
-						</div>
-					</div>
-				</div>
-			</nav>
-
 			{/* Hero Section */}
 			<div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
 				<div className="text-center">
-					<h1 className="text-4xl md:text-6xl font-bold text-gray-900 mb-6">
+					<div className="flex items-center justify-center space-x-2 mb-6">
+						<AcademicCapIcon className="h-12 w-12 text-blue-600" />
+						<h1 className="text-4xl md:text-6xl font-bold text-gray-900">
+							SpeedCoders
+						</h1>
+					</div>
+					<h2 className="text-2xl md:text-4xl font-bold text-gray-900 mb-6">
 						Master Algorithms &{" "}
 						<span className="text-blue-600">Data Structures</span>
-					</h1>
+					</h2>
 					<p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto">
 						Learn algorithms, solve coding problems, and improve your programming skills 
 						with interactive challenges and real-time feedback. Start practicing immediately!
 					</p>
 					<div className="flex flex-col sm:flex-row gap-4 justify-center">
 						<Link
-							href="/dashboard"
+							href="/problems"
 							className="inline-flex items-center px-8 py-4 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg text-lg transition-colors cursor-pointer"
 						>
 							Start Learning Now
 							<ArrowRightIcon className="ml-2 h-5 w-5" />
 						</Link>
 						<Link
-							href="/problems"
+							href="/leetcode"
 							className="inline-flex items-center px-8 py-4 bg-white hover:bg-gray-50 text-gray-900 font-semibold rounded-lg text-lg border border-gray-300 transition-colors cursor-pointer"
 						>
 							Browse Problems
@@ -116,32 +84,82 @@ export default function HomePage() {
 					<div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
 						<Link
 							href="/quiz"
-							className="bg-white p-6 rounded-lg shadow-sm hover:shadow-md transition-shadow cursor-pointer"
+							className="bg-white p-6 rounded-lg shadow-sm hover:shadow-md transition-shadow cursor-pointer group"
 						>
-							<h3 className="text-lg font-semibold text-gray-900 mb-2">Take a Quiz</h3>
+							<div className="flex items-center space-x-3 mb-3">
+								<div className="p-2 bg-blue-100 rounded-lg group-hover:bg-blue-200 transition-colors">
+									<StarIcon className="h-6 w-6 text-blue-600" />
+								</div>
+								<h3 className="text-lg font-semibold text-gray-900">Take a Quiz</h3>
+							</div>
 							<p className="text-gray-600">Test your knowledge with interactive quizzes</p>
 						</Link>
 						<Link
 							href="/problems"
-							className="bg-white p-6 rounded-lg shadow-sm hover:shadow-md transition-shadow cursor-pointer"
+							className="bg-white p-6 rounded-lg shadow-sm hover:shadow-md transition-shadow cursor-pointer group"
 						>
-							<h3 className="text-lg font-semibold text-gray-900 mb-2">Solve Problems</h3>
+							<div className="flex items-center space-x-3 mb-3">
+								<div className="p-2 bg-green-100 rounded-lg group-hover:bg-green-200 transition-colors">
+									<CodeBracketIcon className="h-6 w-6 text-green-600" />
+								</div>
+								<h3 className="text-lg font-semibold text-gray-900">Solve Problems</h3>
+							</div>
 							<p className="text-gray-600">Practice with curated coding problems</p>
 						</Link>
 						<Link
 							href="/leetcode"
-							className="bg-white p-6 rounded-lg shadow-sm hover:shadow-md transition-shadow cursor-pointer"
+							className="bg-white p-6 rounded-lg shadow-sm hover:shadow-md transition-shadow cursor-pointer group"
 						>
-							<h3 className="text-lg font-semibold text-gray-900 mb-2">LeetCode Style</h3>
+							<div className="flex items-center space-x-3 mb-3">
+								<div className="p-2 bg-purple-100 rounded-lg group-hover:bg-purple-200 transition-colors">
+									<FireIcon className="h-6 w-6 text-purple-600" />
+								</div>
+								<h3 className="text-lg font-semibold text-gray-900">LeetCode Style</h3>
+							</div>
 							<p className="text-gray-600">Experience LeetCode-like problems</p>
 						</Link>
 						<Link
 							href="/dashboard"
-							className="bg-white p-6 rounded-lg shadow-sm hover:shadow-md transition-shadow cursor-pointer"
+							className="bg-white p-6 rounded-lg shadow-sm hover:shadow-md transition-shadow cursor-pointer group"
 						>
-							<h3 className="text-lg font-semibold text-gray-900 mb-2">View Dashboard</h3>
+							<div className="flex items-center space-x-3 mb-3">
+								<div className="p-2 bg-orange-100 rounded-lg group-hover:bg-orange-200 transition-colors">
+									<ChartBarIcon className="h-6 w-6 text-orange-600" />
+								</div>
+								<h3 className="text-lg font-semibold text-gray-900">View Dashboard</h3>
+							</div>
 							<p className="text-gray-600">See your progress and achievements</p>
 						</Link>
+					</div>
+				</div>
+			</div>
+
+			{/* Stats Section */}
+			<div className="bg-white py-20">
+				<div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+					<div className="text-center mb-12">
+						<h2 className="text-3xl font-bold text-gray-900 mb-4">Platform Statistics</h2>
+						<p className="text-xl text-gray-600">
+							Join thousands of developers improving their skills
+						</p>
+					</div>
+					<div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+						<div className="text-center">
+							<div className="text-3xl font-bold text-blue-600 mb-2">50+</div>
+							<p className="text-gray-600">Coding Problems</p>
+						</div>
+						<div className="text-center">
+							<div className="text-3xl font-bold text-green-600 mb-2">12</div>
+							<p className="text-gray-600">Algorithm Categories</p>
+						</div>
+						<div className="text-center">
+							<div className="text-3xl font-bold text-purple-600 mb-2">100+</div>
+							<p className="text-gray-600">Algorithms Covered</p>
+						</div>
+						<div className="text-center">
+							<div className="text-3xl font-bold text-orange-600 mb-2">∞</div>
+							<p className="text-gray-600">Learning Possibilities</p>
+						</div>
 					</div>
 				</div>
 			</div>
@@ -161,7 +179,7 @@ export default function HomePage() {
 							<Link href="/auth/login" className="text-gray-400 hover:text-white cursor-pointer">
 								Sign In
 							</Link>
-							<Link href="/auth/register" className="text-gray-400 hover:text-white cursor-pointer">
+							<Link href="/auth/signup" className="text-gray-400 hover:text-white cursor-pointer">
 								Register
 							</Link>
 							<Link href="/dashboard" className="text-gray-400 hover:text-white cursor-pointer">

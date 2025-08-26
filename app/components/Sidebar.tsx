@@ -38,7 +38,7 @@ const navigation = [
 	{ name: "System Design", href: "/system-design", icon: CpuChipIcon, badge: "New" },
 	{ name: "Learning Paths", href: "/learning-paths", icon: AcademicCapIcon, badge: null },
 	{ name: "Frontend Tricks", href: "/frontend", icon: ComputerDesktopIcon, badge: null },
-	{ name: "Quiz Creator", href: "/quiz/create", icon: PuzzlePieceIcon, badge: null },
+	{ name: "Quiz", href: "/quiz", icon: PuzzlePieceIcon, badge: null },
 	{ name: "Practice Arena", href: "/arena", icon: TrophyIcon, badge: "Hot" },
 	{ name: "Study Groups", href: "/study-groups", icon: UsersIcon, badge: null },
 	{ name: "Achievements", href: "/achievements", icon: FireIcon, badge: null },

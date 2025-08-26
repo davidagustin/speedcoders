@@ -101,7 +101,7 @@ export default function AdvancedAnalytics() {
 
 	useEffect(() => {
 		fetchAnalyticsData();
-	}, [fetchAnalyticsData]);
+	}, [selectedTimeframe]);
 
 	const fetchAnalyticsData = async () => {
 		setLoading(true);

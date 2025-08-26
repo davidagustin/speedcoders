@@ -64,7 +64,7 @@ export default function CompetitiveLeaderboard() {
 	useEffect(() => {
 		fetchLeaderboardData();
 		fetchTournaments();
-	}, [fetchLeaderboardData, fetchTournaments]);
+	}, []);
 
 	const fetchLeaderboardData = async () => {
 		setLoading(true);

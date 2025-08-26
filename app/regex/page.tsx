@@ -110,7 +110,7 @@ export default function RegexPage() {
 
 	useEffect(() => {
 		checkAuth();
-	}, [checkAuth]);
+	}, []);
 
 	const checkAuth = async () => {
 		const {

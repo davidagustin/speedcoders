@@ -41,7 +41,7 @@ export default function PremiumUpgrade() {
 
 	useEffect(() => {
 		loadSubscriptionData();
-	}, [loadSubscriptionData]);
+	}, []);
 
 	const loadSubscriptionData = () => {
 		setLoading(true);

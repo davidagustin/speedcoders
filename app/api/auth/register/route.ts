@@ -1,52 +1,44 @@
-import bcrypt from "bcryptjs";
 import { type NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/app/lib/prisma";
 
 export async function POST(request: NextRequest) {
 	try {
-		const { name, email, password } = await request.json();
+		const { email, password, name } = await request.json();
 
-		if (!name || !email || !password) {
+		if (!email || !password) {
 			return NextResponse.json(
-				{ error: "Name, email, and password are required" },
+				{ error: "Email and password are required" },
 				{ status: 400 },
 			);
 		}
 
-		// Check if user already exists
-		const existingUser = await prisma.user.findUnique({
-			where: { email },
+		// Mock registration - in production, this would create a real user
+		const mockUser = {
+			id: "user_" + Date.now(),
+			email,
+			name: name || email.split("@")[0],
+			role: "user",
+			createdAt: new Date().toISOString(),
+		};
+
+		// Create a simple session token
+		const token = Buffer.from(JSON.stringify(mockUser)).toString("base64");
+
+		const response = NextResponse.json({
+			user: mockUser,
+			token,
+			success: true,
+			message: "Registration successful",
 		});
 
-		if (existingUser) {
-			return NextResponse.json(
-				{ error: "User already exists" },
-				{ status: 400 },
-			);
-		}
-
-		// Hash password
-		const hashedPassword = await bcrypt.hash(password, 12);
-
-		// Create user
-		const user = await prisma.user.create({
-			data: {
-				name,
-				email,
-				password: hashedPassword,
-			},
+		// Set cookie for session
+		response.cookies.set("session-token", token, {
+			httpOnly: true,
+			secure: process.env.NODE_ENV === "production",
+			sameSite: "lax",
+			maxAge: 60 * 60 * 24 * 7, // 1 week
 		});
 
-		// Return user data (without password)
-		const { password: _, ...userWithoutPassword } = user;
-
-		return NextResponse.json(
-			{
-				message: "User created successfully",
-				user: userWithoutPassword,
-			},
-			{ status: 201 },
-		);
+		return response;
 	} catch (error) {
 		console.error("Registration error:", error);
 		return NextResponse.json(

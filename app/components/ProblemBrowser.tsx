@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { comprehensiveProblems } from "@/lib/data/problems";
+import { comprehensiveProblems } from "@/lib/data/comprehensive-problems";
 
 interface ProblemBrowserProps {
 	onSelectProblems?: (problems: string[]) => void;

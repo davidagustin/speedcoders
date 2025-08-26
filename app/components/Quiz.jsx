@@ -1,11 +1,12 @@
 import { useEffect, useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
-import { allLeetcodeProblems, companyTags } from "../data/allProblems";
+import { useRouter, useSearchParams } from "next/navigation";
+import { allProblems as allLeetcodeProblems } from "@/lib/data/all-batches-index";
+const companyTags = { Google: [], Facebook: [], Amazon: [], Microsoft: [], Apple: [] };
 
 function Quiz({ user, onComplete }) {
-	const navigate = useNavigate();
-	const location = useLocation();
-	const quizOptions = location.state || {};
+	const router = useRouter();
+	const searchParams = useSearchParams();
+	const quizOptions = Object.fromEntries(searchParams.entries());
 
 	const [questions, setQuestions] = useState([]);
 	const [currentQuestion, setCurrentQuestion] = useState(0);
@@ -313,7 +314,7 @@ function Quiz({ user, onComplete }) {
 		}
 
 		onComplete(result);
-		navigate("/results");
+		router.push("/results");
 	};
 
 	const handleNext = () => {
@@ -403,7 +404,7 @@ function Quiz({ user, onComplete }) {
 						<button className="start-btn" onClick={() => setQuizStarted(true)}>
 							🚀 Start Quiz
 						</button>
-						<button className="back-btn" onClick={() => navigate("/dashboard")}>
+						<button className="back-btn" onClick={() => router.push("/dashboard")}>
 							← Back to Dashboard
 						</button>
 					</div>

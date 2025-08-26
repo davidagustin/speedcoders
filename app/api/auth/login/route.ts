@@ -1,6 +1,4 @@
 import { type NextRequest, NextResponse } from "next/server";
-import { generateToken, verifyPassword } from "@/app/lib/auth";
-import { prisma } from "@/app/lib/prisma";
 
 export async function POST(request: NextRequest) {
 	try {
@@ -13,38 +11,33 @@ export async function POST(request: NextRequest) {
 			);
 		}
 
-		// Find user by email
-		const user = await prisma.user.findUnique({
-			where: { email },
-		});
+		// Mock authentication - accept any email/password for demo
+		// In production, this would verify against a real database
+		const mockUser = {
+			id: "user_" + Date.now(),
+			email,
+			name: email.split("@")[0],
+			role: "user",
+		};
 
-		if (!user || !user.password) {
-			return NextResponse.json(
-				{ error: "Invalid credentials" },
-				{ status: 401 },
-			);
-		}
+		// Create a simple session token
+		const token = Buffer.from(JSON.stringify(mockUser)).toString("base64");
 
-		// Verify password
-		const isValidPassword = await verifyPassword(password, user.password);
-
-		if (!isValidPassword) {
-			return NextResponse.json(
-				{ error: "Invalid credentials" },
-				{ status: 401 },
-			);
-		}
-
-		// Generate JWT token
-		const token = generateToken(user.id);
-
-		// Return user data (without password) and token
-		const { password: _, ...userWithoutPassword } = user;
-
-		return NextResponse.json({
-			user: userWithoutPassword,
+		const response = NextResponse.json({
+			user: mockUser,
 			token,
+			success: true,
 		});
+
+		// Set cookie for session
+		response.cookies.set("session-token", token, {
+			httpOnly: true,
+			secure: process.env.NODE_ENV === "production",
+			sameSite: "lax",
+			maxAge: 60 * 60 * 24 * 7, // 1 week
+		});
+
+		return response;
 	} catch (error) {
 		console.error("Login error:", error);
 		return NextResponse.json(
