@@ -20,6 +20,7 @@ import ProblemBrowser from "@/app/components/ProblemBrowser";
 import QuizResults from "@/app/components/QuizResults";
 import StudyPlanner from "@/app/components/StudyPlanner";
 import { editorialProblems } from "@/app/lib/editorial-problems";
+import { apiClient } from "@/utils/api/client";
 
 interface QuizState {
 	isActive: boolean;
@@ -158,22 +159,17 @@ export default function Dashboard() {
 
 	const startQuiz = async (config: any) => {
 		try {
-			const response = await fetch("/api/quiz/enhanced-start", {
-				method: "POST",
-				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify({
-					userId: "current-user",
-					config,
-				}),
+			const response = await apiClient.startEnhancedQuiz({
+				userId: "current-user",
+				config,
 			});
 
-			if (response.ok) {
-				const data = await response.json();
+			if (response.success) {
 				setQuizState({
 					isActive: true,
 					currentQuestion: 0,
-					problems: data.quiz.problems,
-					timeLeft: data.quiz.timeLimit * 60,
+					problems: response.data.quiz.problems,
+					timeLeft: response.data.quiz.timeLimit * 60,
 					selectedAlgorithms: [],
 					answers: [],
 				});

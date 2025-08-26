@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowRightIcon, AcademicCapIcon, ChartBarIcon, TrophyIcon, ClockIcon, FireIcon, StarIcon, CodeBracketIcon } from "@heroicons/react/24/outline";
+import { ArrowRightIcon, AcademicCapIcon, ChartBarIcon, TrophyIcon, ClockIcon, FireIcon, StarIcon, CodeBracketIcon, BuildingOfficeIcon } from "@heroicons/react/24/outline";
 
 export default function HomePage() {
 	return (
@@ -129,6 +129,42 @@ export default function HomePage() {
 								<h3 className="text-lg font-semibold text-gray-900">View Dashboard</h3>
 							</div>
 							<p className="text-gray-600">See your progress and achievements</p>
+						</Link>
+						<Link
+							href="/contest"
+							className="bg-white p-6 rounded-lg shadow-sm hover:shadow-md transition-shadow cursor-pointer group"
+						>
+							<div className="flex items-center space-x-3 mb-3">
+								<div className="p-2 bg-red-100 rounded-lg group-hover:bg-red-200 transition-colors">
+									<TrophyIcon className="h-6 w-6 text-red-600" />
+								</div>
+								<h3 className="text-lg font-semibold text-gray-900">Contest Mode</h3>
+							</div>
+							<p className="text-gray-600">Compete in timed challenges</p>
+						</Link>
+						<Link
+							href="/company"
+							className="bg-white p-6 rounded-lg shadow-sm hover:shadow-md transition-shadow cursor-pointer group"
+						>
+							<div className="flex items-center space-x-3 mb-3">
+								<div className="p-2 bg-indigo-100 rounded-lg group-hover:bg-indigo-200 transition-colors">
+									<BuildingOfficeIcon className="h-6 w-6 text-indigo-600" />
+								</div>
+								<h3 className="text-lg font-semibold text-gray-900">Company Problems</h3>
+							</div>
+							<p className="text-gray-600">Practice company-specific questions</p>
+						</Link>
+						<Link
+							href="/algorithms"
+							className="bg-white p-6 rounded-lg shadow-sm hover:shadow-md transition-shadow cursor-pointer group"
+						>
+							<div className="flex items-center space-x-3 mb-3">
+								<div className="p-2 bg-teal-100 rounded-lg group-hover:bg-teal-200 transition-colors">
+									<AcademicCapIcon className="h-6 w-6 text-teal-600" />
+								</div>
+								<h3 className="text-lg font-semibold text-gray-900">Algorithm Mastery</h3>
+							</div>
+							<p className="text-gray-600">Master algorithms systematically</p>
 						</Link>
 					</div>
 				</div>

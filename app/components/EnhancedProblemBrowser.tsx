@@ -1,10 +1,10 @@
-'use client';
+"use client";
 
 import { useState, useEffect, useMemo, useRef } from 'react';
-import { 
-  MagnifyingGlassIcon, 
-  FunnelIcon, 
-  CheckIcon, 
+import {
+  MagnifyingGlassIcon,
+  FunnelIcon,
+  CheckIcon,
   PlayIcon,
   StarIcon,
   ClockIcon,
@@ -51,94 +51,56 @@ export default function EnhancedProblemBrowser({ onSelectProblems, onCreateQuiz 
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
   const searchInputRef = useRef<HTMLInputElement>(null);
 
-  // Load saved searches on mount
-  useEffect(() => {
-    const saved = JSON.parse(localStorage.getItem('savedSearches') || '[]');
-    setSavedSearches(saved);
+  // Filtered problems based on search and filters
+  const filteredProblems = useMemo(() => {
+    let filtered = problems;
 
-    const history = JSON.parse(localStorage.getItem('searchHistory') || '[]');
-    setSearchHistory(history);
-  }, []);
-
-  // Search suggestions based on query
-  const searchSuggestions = useMemo(() => {
-    if (!searchQuery || searchQuery.length < 2) return [];
-
-    const query = searchQuery.toLowerCase();
-    const suggestions = new Set<string>();
-
-    // Add problem titles that match
-    comprehensiveProblems
-      .filter((p) => p.title.toLowerCase().includes(query))
-      .slice(0, 5)
-      .forEach((p) => suggestions.add(`title:${p.title}`));
-
-    // Add algorithms that match
-    Object.values(algorithmCategories)
-      .flat()
-      .filter((algo) => algo.toLowerCase().includes(query))
-      .slice(0, 3)
-      .forEach((algo) => suggestions.add(`algorithm:${algo}`));
-
-    return Array.from(suggestions).slice(0, 8);
-  }, [searchQuery]);
-
-  // Advanced search with multiple criteria
-  const performAdvancedSearch = () => {
-    let results = [...comprehensiveProblems];
-
-    // Text search in title, description, and tags
+    // Search filter
     if (searchQuery) {
-      const query = searchQuery.toLowerCase();
-      results = results.filter((problem) => {
-        // Check for special search operators
-        if (query.startsWith('title:')) {
-          return problem.title.toLowerCase().includes(query.substring(6));
-        }
-        if (query.startsWith('id:')) {
-          return problem.id.toString() === query.substring(3);
-        }
-        if (query.startsWith('algorithm:')) {
-          const algo = query.substring(10);
-          return problem.algorithms.some((a) => a.toLowerCase().includes(algo));
-        }
-
-        // Regular text search
-        return (
-          problem.title.toLowerCase().includes(query) ||
-          problem.description.toLowerCase().includes(query) ||
-          problem.algorithms.some((algo) => algo.toLowerCase().includes(query))
-        );
-      });
+      const searchLower = searchQuery.toLowerCase();
+      filtered = filtered.filter(problem =>
+        problem.title.toLowerCase().includes(searchLower) ||
+        problem.description.toLowerCase().includes(searchLower) ||
+        problem.algorithms.some(alg => alg.toLowerCase().includes(searchLower)) ||
+        problem.category.toLowerCase().includes(searchLower)
+      );
     }
 
-    // Apply filters
+    // Difficulty filter
     if (filters.difficulties.length > 0) {
-      results = results.filter((p) => filters.difficulties.includes(p.difficulty));
+      filtered = filtered.filter(problem => filters.difficulties.includes(problem.difficulty));
     }
 
-    if (filters.algorithms.length > 0) {
-      results = results.filter((p) =>
-        filters.algorithms.some((algo) => p.algorithms.includes(algo))
-      );
-    }
-
+    // Category filter
     if (filters.categories.length > 0) {
-      results = results.filter((p) => filters.categories.includes(p.category));
+      filtered = filtered.filter(problem => filters.categories.includes(problem.category));
     }
 
-    if (filters.companies.length > 0) {
-      results = results.filter((p) =>
-        p.companies && filters.companies.some((company) => p.companies!.includes(company))
+    // Algorithm filter
+    if (filters.algorithms.length > 0) {
+      filtered = filtered.filter(problem =>
+        problem.algorithms.some(alg => filters.algorithms.includes(alg))
       );
     }
 
-    if (filters.hasEditorial) {
-      results = results.filter((p) => p.editorial);
+    // Company filter
+    if (filters.companies.length > 0) {
+      filtered = filtered.filter(problem =>
+        problem.companies?.some(company => filters.companies.includes(company))
+      );
     }
 
-    // Sort results
-    results.sort((a, b) => {
+    // Editorial filter
+    if (filters.hasEditorial) {
+      filtered = filtered.filter(problem => problem.editorial);
+    }
+
+    return filtered;
+  }, [problems, searchQuery, filters]);
+
+  // Sorted problems
+  const sortedProblems = useMemo(() => {
+    return [...filteredProblems].sort((a, b) => {
       let comparison = 0;
       switch (sortBy) {
         case 'id':
@@ -155,56 +117,38 @@ export default function EnhancedProblemBrowser({ onSelectProblems, onCreateQuiz 
           comparison = a.category.localeCompare(b.category);
           break;
         default:
-          comparison = a.id - b.id;
+          comparison = 0;
       }
-      return sortOrder === 'asc' ? comparison : -comparison;
+      return sortOrder === 'desc' ? -comparison : comparison;
     });
-
-    return results;
-  };
-
-  // Filtered problems based on search and filters
-  const filteredProblems = useMemo(() => {
-    return performAdvancedSearch();
-  }, [searchQuery, filters, sortBy, sortOrder]);
+  }, [filteredProblems, sortBy, sortOrder]);
 
   const handleSearch = () => {
     if (searchQuery.trim()) {
-      // Add to search history
-      const newHistory = [searchQuery, ...searchHistory.filter(h => h !== searchQuery)].slice(0, 10);
-      setSearchHistory(newHistory);
-      localStorage.setItem('searchHistory', JSON.stringify(newHistory));
+      setSearchHistory(prev => {
+        const newHistory = [searchQuery, ...prev.filter(item => item !== searchQuery)].slice(0, 10);
+        return newHistory;
+      });
     }
   };
 
   const handleSaveSearch = () => {
-    const searchString = JSON.stringify({ query: searchQuery, filters });
-    if (!savedSearches.includes(searchString)) {
-      const newSaved = [...savedSearches, searchString].slice(0, 5);
-      setSavedSearches(newSaved);
-      localStorage.setItem('savedSearches', JSON.stringify(newSaved));
+    if (searchQuery.trim() && !savedSearches.includes(searchQuery)) {
+      setSavedSearches(prev => [...prev, searchQuery]);
     }
   };
 
-  const handleLoadSearch = (searchString: string) => {
-    try {
-      const { query, filters: savedFilters } = JSON.parse(searchString);
-      setSearchQuery(query);
-      setFilters(savedFilters);
-    } catch (error) {
-      console.error('Error loading saved search:', error);
-    }
+  const handleLoadSearch = (search: string) => {
+    setSearchQuery(search);
+    searchInputRef.current?.focus();
   };
 
-  const handleProblemToggle = (problemTitle: string) => {
-    setSelectedProblems(prev => {
-      const normalizedTitle = problemTitle.toLowerCase().replace(/\s+/g, '-');
-      if (prev.includes(normalizedTitle)) {
-        return prev.filter(p => p !== normalizedTitle);
-      } else {
-        return [...prev, normalizedTitle];
-      }
-    });
+  const handleProblemToggle = (problemId: string) => {
+    setSelectedProblems(prev => 
+      prev.includes(problemId) 
+        ? prev.filter(id => id !== problemId)
+        : [...prev, problemId]
+    );
   };
 
   const handleCreateQuiz = () => {
@@ -219,108 +163,100 @@ export default function EnhancedProblemBrowser({ onSelectProblems, onCreateQuiz 
 
   const getDifficultyColor = (difficulty: string) => {
     switch (difficulty) {
-      case 'Easy': return 'bg-green-100 text-green-800';
-      case 'Medium': return 'bg-yellow-100 text-yellow-800';
-      case 'Hard': return 'bg-red-100 text-red-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case 'Easy': return 'text-green-600 bg-green-100';
+      case 'Medium': return 'text-yellow-600 bg-yellow-100';
+      case 'Hard': return 'text-red-600 bg-red-100';
+      default: return 'text-gray-600 bg-gray-100';
     }
   };
 
-  const allCategories = [...new Set(comprehensiveProblems.map(p => p.category))];
+  const allCategories = Array.from(new Set(problems.map(p => p.category))).sort();
   const allDifficulties = ['Easy', 'Medium', 'Hard'];
-  const allAlgorithms = [...new Set(comprehensiveProblems.flatMap(p => p.algorithms))];
+  const allAlgorithms = Array.from(new Set(problems.flatMap(p => p.algorithms))).sort();
+  const allCompanies = Array.from(new Set(problems.flatMap(p => p.companies || []))).sort();
 
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900">Advanced Problem Browser</h2>
-          <p className="text-gray-600">Search and filter through {comprehensiveProblems.length} problems</p>
+          <h2 className="text-2xl font-bold text-gray-900">Enhanced Problem Browser</h2>
+          <p className="text-gray-600">Advanced search and filtering for algorithm problems</p>
         </div>
-        <div className="flex items-center space-x-2">
-          <button
-            onClick={() => setShowFilters(!showFilters)}
-            className="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
-          >
-            <FunnelIcon className="h-4 w-4 mr-2" />
-            Filters
-          </button>
-          <select
-            value={sortBy}
-            onChange={(e) => setSortBy(e.target.value)}
-            className="px-3 py-2 border border-gray-300 rounded-md text-sm"
-          >
-            <option value="id">Sort by ID</option>
-            <option value="title">Sort by Title</option>
-            <option value="difficulty">Sort by Difficulty</option>
-            <option value="category">Sort by Category</option>
-          </select>
-          <button
-            onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
-            className="px-3 py-2 border border-gray-300 rounded-md text-sm"
-          >
-            {sortOrder === 'asc' ? '↑' : '↓'}
-          </button>
-        </div>
+        {selectedProblems.length > 0 && (
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-gray-600">{selectedProblems.length} selected</span>
+            <button
+              onClick={clearSelection}
+              className="text-sm text-gray-500 hover:text-gray-700"
+            >
+              Clear
+            </button>
+            <button
+              onClick={handleCreateQuiz}
+              className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            >
+              <PlayIcon className="h-4 w-4 mr-2" />
+              Create Quiz
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Search Bar */}
-      <div className="relative">
-        <div className="flex items-center space-x-2">
+      <div className="bg-white rounded-lg shadow-sm p-6">
+        <div className="flex flex-col lg:flex-row gap-4">
           <div className="flex-1 relative">
-            <MagnifyingGlassIcon className="h-5 w-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+            <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
             <input
               ref={searchInputRef}
               type="text"
+              placeholder="Search problems by title, description, algorithm, or category..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
-              placeholder="Search problems by title, algorithm, or use advanced operators (title:, id:, algorithm:)..."
-              className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
-            {searchSuggestions.length > 0 && (
-              <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg">
-                {searchSuggestions.map((suggestion, index) => (
-                  <button
-                    key={index}
-                    onClick={() => setSearchQuery(suggestion)}
-                    className="w-full text-left px-4 py-2 hover:bg-gray-100 text-sm"
-                  >
-                    {suggestion}
-                  </button>
-                ))}
-              </div>
-            )}
           </div>
-          <button
-            onClick={handleSearch}
-            className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-          >
-            Search
-          </button>
-          <button
-            onClick={handleSaveSearch}
-            className="px-4 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50"
-          >
-            <StarIcon className="h-4 w-4" />
-          </button>
+          <div className="flex gap-2">
+            <button
+              onClick={handleSearch}
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            >
+              Search
+            </button>
+            <button
+              onClick={() => setShowFilters(!showFilters)}
+              className="flex items-center px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+            >
+              <FunnelIcon className="h-5 w-5 mr-2" />
+              Filters
+            </button>
+            <button
+              onClick={handleSaveSearch}
+              className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+            >
+              Save Search
+            </button>
+          </div>
         </div>
+      </div>
 
-        {/* Search History and Saved Searches */}
-        {(searchHistory.length > 0 || savedSearches.length > 0) && (
-          <div className="mt-4 flex space-x-4">
+      {/* Search History and Saved Searches */}
+      {(searchHistory.length > 0 || savedSearches.length > 0) && (
+        <div className="bg-white rounded-lg shadow-sm p-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {searchHistory.length > 0 && (
               <div>
-                <h4 className="text-sm font-medium text-gray-700 mb-2">Recent Searches</h4>
+                <h3 className="text-sm font-medium text-gray-700 mb-3">Recent Searches</h3>
                 <div className="flex flex-wrap gap-2">
-                  {searchHistory.slice(0, 5).map((query, index) => (
+                  {searchHistory.slice(0, 5).map((search, index) => (
                     <button
                       key={index}
-                      onClick={() => setSearchQuery(query)}
-                      className="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm hover:bg-gray-200"
+                      onClick={() => handleLoadSearch(search)}
+                      className="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm hover:bg-gray-200 transition-colors"
                     >
-                      {query}
+                      {search}
                     </button>
                   ))}
                 </div>
@@ -328,34 +264,34 @@ export default function EnhancedProblemBrowser({ onSelectProblems, onCreateQuiz 
             )}
             {savedSearches.length > 0 && (
               <div>
-                <h4 className="text-sm font-medium text-gray-700 mb-2">Saved Searches</h4>
+                <h3 className="text-sm font-medium text-gray-700 mb-3">Saved Searches</h3>
                 <div className="flex flex-wrap gap-2">
-                  {savedSearches.slice(0, 3).map((search, index) => (
+                  {savedSearches.slice(0, 5).map((search, index) => (
                     <button
                       key={index}
                       onClick={() => handleLoadSearch(search)}
-                      className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm hover:bg-blue-200"
+                      className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm hover:bg-blue-200 transition-colors"
                     >
-                      Saved {index + 1}
+                      {search}
                     </button>
                   ))}
                 </div>
               </div>
             )}
           </div>
-        )}
-      </div>
+        </div>
+      )}
 
       {/* Filters */}
       {showFilters && (
-        <div className="bg-white p-6 rounded-lg shadow-sm border">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Advanced Filters</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="bg-white rounded-lg shadow-sm p-6">
+          <h3 className="text-lg font-medium text-gray-900 mb-4">Advanced Filters</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {/* Difficulty Filter */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">Difficulty</label>
               <div className="space-y-2">
-                {allDifficulties.map((difficulty) => (
+                {allDifficulties.map(difficulty => (
                   <label key={difficulty} className="flex items-center">
                     <input
                       type="checkbox"
@@ -373,7 +309,7 @@ export default function EnhancedProblemBrowser({ onSelectProblems, onCreateQuiz 
                           }));
                         }
                       }}
-                      className="h-4 w-4 text-blue-600 rounded border-gray-300"
+                      className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                     />
                     <span className="ml-2 text-sm text-gray-700">{difficulty}</span>
                   </label>
@@ -385,7 +321,7 @@ export default function EnhancedProblemBrowser({ onSelectProblems, onCreateQuiz 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">Category</label>
               <div className="space-y-2 max-h-40 overflow-y-auto">
-                {allCategories.slice(0, 10).map((category) => (
+                {allCategories.map(category => (
                   <label key={category} className="flex items-center">
                     <input
                       type="checkbox"
@@ -403,7 +339,7 @@ export default function EnhancedProblemBrowser({ onSelectProblems, onCreateQuiz 
                           }));
                         }
                       }}
-                      className="h-4 w-4 text-blue-600 rounded border-gray-300"
+                      className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                     />
                     <span className="ml-2 text-sm text-gray-700">{category}</span>
                   </label>
@@ -413,9 +349,9 @@ export default function EnhancedProblemBrowser({ onSelectProblems, onCreateQuiz 
 
             {/* Algorithm Filter */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Algorithms</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Algorithm</label>
               <div className="space-y-2 max-h-40 overflow-y-auto">
-                {allAlgorithms.slice(0, 10).map((algorithm) => (
+                {allAlgorithms.slice(0, 20).map(algorithm => (
                   <label key={algorithm} className="flex items-center">
                     <input
                       type="checkbox"
@@ -433,170 +369,144 @@ export default function EnhancedProblemBrowser({ onSelectProblems, onCreateQuiz 
                           }));
                         }
                       }}
-                      className="h-4 w-4 text-blue-600 rounded border-gray-300"
+                      className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                     />
                     <span className="ml-2 text-sm text-gray-700">{algorithm}</span>
                   </label>
                 ))}
               </div>
             </div>
-
-            {/* Additional Filters */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Options</label>
-              <div className="space-y-2">
-                <label className="flex items-center">
-                  <input
-                    type="checkbox"
-                    checked={filters.hasEditorial}
-                    onChange={(e) => setFilters(prev => ({ ...prev, hasEditorial: e.target.checked }))}
-                    className="h-4 w-4 text-blue-600 rounded border-gray-300"
-                  />
-                  <span className="ml-2 text-sm text-gray-700">Has Editorial</span>
-                </label>
-              </div>
-            </div>
           </div>
-        </div>
-      )}
 
-      {/* Selection Actions */}
-      {selectedProblems.length > 0 && (
-        <div className="bg-blue-50 p-4 rounded-lg">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <span className="text-sm font-medium text-blue-900">
-                {selectedProblems.length} problems selected
-              </span>
-              <button
-                onClick={clearSelection}
-                className="text-sm text-blue-600 hover:text-blue-800"
+          {/* Sort Options */}
+          <div className="mt-6 pt-6 border-t border-gray-200">
+            <div className="flex items-center gap-4">
+              <label className="text-sm font-medium text-gray-700">Sort by:</label>
+              <select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value)}
+                className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               >
-                Clear Selection
+                <option value="id">ID</option>
+                <option value="title">Title</option>
+                <option value="difficulty">Difficulty</option>
+                <option value="category">Category</option>
+              </select>
+              <button
+                onClick={() => setSortOrder(prev => prev === 'asc' ? 'desc' : 'asc')}
+                className="px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+              >
+                {sortOrder === 'asc' ? '↑' : '↓'}
               </button>
             </div>
-            <button
-              onClick={handleCreateQuiz}
-              className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-            >
-              <PlayIcon className="h-4 w-4 mr-2" />
-              Create Quiz
-            </button>
           </div>
         </div>
       )}
 
       {/* Results Summary */}
-      <div className="flex items-center justify-between text-sm text-gray-600">
-        <span>Showing {filteredProblems.length} of {comprehensiveProblems.length} problems</span>
-        {selectedProblems.length > 0 && (
-          <span className="text-blue-600 font-medium">
-            {selectedProblems.length} selected
-          </span>
-        )}
+      <div className="flex justify-between items-center">
+        <p className="text-gray-600">
+          Showing {sortedProblems.length} of {problems.length} problems
+        </p>
+        <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2 text-sm text-gray-600">
+            <ChartBarIcon className="h-4 w-4" />
+            <span>Easy: {problems.filter(p => p.difficulty === 'Easy').length}</span>
+            <span>Medium: {problems.filter(p => p.difficulty === 'Medium').length}</span>
+            <span>Hard: {problems.filter(p => p.difficulty === 'Hard').length}</span>
+          </div>
+        </div>
       </div>
 
       {/* Problems List */}
-      <div className="space-y-4">
-        {filteredProblems.slice(0, 50).map((problem) => (
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {sortedProblems.map((problem) => (
           <div
             key={problem.id}
-            className={`bg-white p-6 rounded-lg shadow-sm border cursor-pointer transition-all ${
-              selectedProblems.includes(problem.title.toLowerCase().replace(/\s+/g, '-'))
+            className={`bg-white rounded-lg shadow-sm border-2 transition-all cursor-pointer ${
+              selectedProblems.includes(problem.id.toString())
                 ? 'border-blue-500 bg-blue-50'
                 : 'border-gray-200 hover:border-gray-300 hover:shadow-md'
             }`}
-            onClick={() => handleProblemToggle(problem.title)}
+            onClick={() => handleProblemToggle(problem.id.toString())}
           >
-            <div className="flex items-start justify-between">
-              <div className="flex items-center space-x-4">
+            <div className="p-6">
+              <div className="flex items-start justify-between mb-3">
+                <h3 className="text-lg font-semibold text-gray-900 line-clamp-2">
+                  {problem.title}
+                </h3>
                 <input
                   type="checkbox"
-                  checked={selectedProblems.includes(problem.title.toLowerCase().replace(/\s+/g, '-'))}
-                  onChange={() => handleProblemToggle(problem.title)}
-                  className="h-5 w-5 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                  checked={selectedProblems.includes(problem.id.toString())}
+                  onChange={() => handleProblemToggle(problem.id.toString())}
+                  className="mt-1 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                  onClick={(e) => e.stopPropagation()}
                 />
-                <div className="flex-1">
-                  <div className="flex items-center space-x-3 mb-2">
-                    <h3 className="text-lg font-semibold text-gray-900">
-                      {problem.title}
-                    </h3>
-                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${getDifficultyColor(problem.difficulty)}`}>
-                      {problem.difficulty}
-                    </span>
-                    {problem.editorial && (
-                      <span className="px-2 py-1 bg-purple-100 text-purple-800 rounded-full text-xs font-medium">
-                        Editorial
-                      </span>
-                    )}
-                  </div>
-                  <p className="text-gray-600 text-sm mb-3 line-clamp-2">
-                    {problem.description.slice(0, 200)}...
-                  </p>
-                  <div className="flex flex-wrap gap-2">
-                    {problem.algorithms.slice(0, 4).map((algorithm) => (
-                      <span
-                        key={algorithm}
-                        className="px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded-md"
-                      >
-                        {algorithm}
-                      </span>
-                    ))}
-                    {problem.algorithms.length > 4 && (
-                      <span className="px-2 py-1 bg-gray-100 text-gray-500 text-xs rounded-md">
-                        +{problem.algorithms.length - 4} more
-                      </span>
-                    )}
-                  </div>
-                </div>
               </div>
-              <div className="ml-4 flex flex-col items-end text-xs text-gray-500">
-                <span>#{problem.id}</span>
-                {problem.leetcodeUrl && (
-                  <a
-                    href={problem.leetcodeUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    onClick={(e) => e.stopPropagation()}
-                    className="text-blue-600 hover:text-blue-800 mt-1"
-                  >
-                    View on LeetCode →
-                  </a>
+              
+              <div className="flex items-center gap-2 mb-3">
+                <span className={`px-2 py-1 rounded-full text-xs font-medium ${getDifficultyColor(problem.difficulty)}`}>
+                  {problem.difficulty}
+                </span>
+                <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded">
+                  {problem.category}
+                </span>
+                {problem.editorial && (
+                  <span className="text-xs text-purple-600 bg-purple-100 px-2 py-1 rounded">
+                    Editorial
+                  </span>
                 )}
+              </div>
+
+              <p className="text-gray-600 text-sm line-clamp-3 mb-4">
+                {problem.description}
+              </p>
+
+              <div className="flex flex-wrap gap-1 mb-4">
+                {problem.algorithms.slice(0, 4).map((algorithm) => (
+                  <span
+                    key={algorithm}
+                    className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded"
+                  >
+                    {algorithm}
+                  </span>
+                ))}
+                {problem.algorithms.length > 4 && (
+                  <span className="text-xs text-gray-500">
+                    +{problem.algorithms.length - 4} more
+                  </span>
+                )}
+              </div>
+
+              <div className="flex items-center justify-between">
+                <a
+                  href={problem.leetcodeUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-blue-600 hover:text-blue-800 text-sm font-medium"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  View on LeetCode →
+                </a>
+                <div className="flex items-center gap-2">
+                  {problem.companies && problem.companies.length > 0 && (
+                    <span className="text-xs text-gray-500">
+                      {problem.companies[0]}
+                    </span>
+                  )}
+                  <StarIcon className="h-4 w-4 text-gray-400" />
+                </div>
               </div>
             </div>
           </div>
         ))}
       </div>
 
-      {filteredProblems.length > 50 && (
-        <div className="text-center py-4">
-          <p className="text-gray-600">
-            Showing first 50 results. Use filters to narrow down your search.
-          </p>
-        </div>
-      )}
-
-      {filteredProblems.length === 0 && (
-        <div className="text-center py-8">
-          <p className="text-gray-600">No problems found matching your criteria.</p>
-          <button
-            onClick={() => {
-              setSearchQuery('');
-              setFilters({
-                difficulties: [],
-                algorithms: [],
-                categories: [],
-                companies: [],
-                solved: 'all',
-                hasEditorial: false,
-                isPremium: false,
-              });
-            }}
-            className="mt-2 text-blue-600 hover:text-blue-800"
-          >
-            Clear filters to show all problems
-          </button>
+      {sortedProblems.length === 0 && (
+        <div className="text-center py-12">
+          <MagnifyingGlassIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+          <h3 className="text-lg font-medium text-gray-900 mb-2">No problems found</h3>
+          <p className="text-gray-600">Try adjusting your search criteria or filters.</p>
         </div>
       )}
     </div>

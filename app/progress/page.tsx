@@ -9,6 +9,7 @@ import {
 	XCircleIcon,
 } from "@heroicons/react/24/outline";
 import { useEffect, useState } from "react";
+import { apiClient } from "@/utils/api/client";
 
 interface ProgressData {
 	totalAttempts: number;
@@ -51,9 +52,10 @@ export default function ProgressPage() {
 
 	const fetchProgressData = async () => {
 		try {
-			const response = await fetch(`/api/progress?timeRange=${timeRange}`);
-			const data = await response.json();
-			setProgressData(data);
+			const response = await apiClient.getProgress(timeRange);
+			if (response.success) {
+				setProgressData(response.data);
+			}
 		} catch (error) {
 			console.error("Error fetching progress data:", error);
 		} finally {

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import toast from "react-hot-toast";
+import { apiClient } from "@/utils/api/client";
 
 export default function RegisterPage() {
 	const router = useRouter();
@@ -26,20 +27,14 @@ export default function RegisterPage() {
 		setIsLoading(true);
 
 		try {
-			const res = await fetch("/api/auth/register", {
-				method: "POST",
-				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify({
-					name: formData.name,
-					email: formData.email,
-					password: formData.password,
-				}),
-			});
+			const response = await apiClient.register(
+				formData.email,
+				formData.password,
+				formData.name
+			);
 
-			const data = await res.json();
-
-			if (!res.ok) {
-				throw new Error(data.error || "Registration failed");
+			if (!response.success) {
+				throw new Error(response.error || "Registration failed");
 			}
 
 			toast.success("Account created successfully!");

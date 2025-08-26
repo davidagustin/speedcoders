@@ -11,6 +11,7 @@ import {
 import { useState } from "react";
 import type { Quiz, QuizQuestion } from "@/lib/QuizManager";
 import { LoadingSpinner } from "./LoadingSpinner";
+import { apiClient } from "@/utils/api/client";
 
 interface QuizCreatorProps {
 	onQuizCreated?: (quiz: Quiz) => void;
@@ -171,25 +172,20 @@ export function QuizCreator({ onQuizCreated, onCancel }: QuizCreatorProps) {
 		setLoading(true);
 
 		try {
-			const response = await fetch("/api/quiz/create", {
-				method: "POST",
-				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify({
-					...quiz,
-					questions: questions.map((q, index) => ({
-						...q,
-						id: `q${index + 1}`,
-						problemId: `generated-${Date.now()}-${index}`,
-					})),
-				}),
+			const response = await apiClient.createQuiz({
+				...quiz,
+				questions: questions.map((q, index) => ({
+					...q,
+					id: `q${index + 1}`,
+					problemId: `generated-${Date.now()}-${index}`,
+				})),
 			});
 
-			if (!response.ok) {
+			if (!response.success) {
 				throw new Error("Failed to create quiz");
 			}
 
-			const createdQuiz = await response.json();
-			onQuizCreated?.(createdQuiz);
+			onQuizCreated?.(response.data);
 		} catch (err) {
 			setError(err instanceof Error ? err.message : "Failed to create quiz");
 		} finally {
@@ -207,23 +203,18 @@ export function QuizCreator({ onQuizCreated, onCancel }: QuizCreatorProps) {
 		setError("");
 
 		try {
-			const response = await fetch("/api/quiz/generate", {
-				method: "POST",
-				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify({
-					difficulty: quiz.difficulty,
-					categories: quiz.categories,
-					questionCount: Math.min(questions.length, 10),
-					timeLimit: quiz.timeLimit,
-				}),
+			const response = await apiClient.generateQuiz({
+				difficulty: quiz.difficulty,
+				categories: quiz.categories,
+				questionCount: Math.min(questions.length, 10),
+				timeLimit: quiz.timeLimit,
 			});
 
-			if (!response.ok) {
+			if (!response.success) {
 				throw new Error("Failed to generate quiz");
 			}
 
-			const generatedQuiz = await response.json();
-			setQuestions(generatedQuiz.questions);
+			setQuestions(response.data.questions);
 		} catch (err) {
 			setError(err instanceof Error ? err.message : "Failed to generate quiz");
 		} finally {

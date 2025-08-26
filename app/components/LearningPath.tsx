@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { comprehensiveProblems } from "@/lib/data/comprehensive-problems";
 import { createClient } from "@/utils/supabase/client";
+import { apiClient } from "@/utils/api/client";
 
 interface LearningPathProblem {
 	title: string;
@@ -288,14 +289,9 @@ export default function LearningPath() {
 
 	async function createQuizWithProblem(problemTitle: string) {
 		try {
-			const response = await fetch("/api/quiz/start", {
-				method: "POST",
-				headers: {
-					"Content-Type": "application/json",
-				},
-				body: JSON.stringify({
-					userId: "current-user",
-					problemCount: 1,
+			const response = await apiClient.startQuiz({
+				userId: "current-user",
+				problemCount: 1,
 					difficulty: "Mixed",
 					category: null,
 					specificProblem: problemTitle,

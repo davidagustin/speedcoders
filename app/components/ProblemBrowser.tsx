@@ -1,288 +1,361 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { comprehensiveProblems } from "@/lib/data/comprehensive-problems";
+import { useState, useEffect } from 'react';
+import { apiClient } from "@/utils/api/client";
+import { 
+  MagnifyingGlassIcon,
+  FunnelIcon,
+  BookOpenIcon,
+  ClockIcon,
+  StarIcon,
+  ChevronDownIcon,
+  ChevronUpIcon
+} from "@heroicons/react/24/outline";
 
-interface ProblemBrowserProps {
-	onSelectProblems?: (problems: string[]) => void;
-	onCreateQuiz?: (problems: string[]) => void;
+interface Problem {
+  id: number;
+  title: string;
+  difficulty: string;
+  category: string;
+  description: string;
+  leetcodeUrl: string;
+  algorithms: string[];
+  tags: string[];
 }
 
-export default function ProblemBrowser({
-	onSelectProblems,
-	onCreateQuiz,
-}: ProblemBrowserProps) {
-	const [problems] = useState<any[]>(comprehensiveProblems);
-	const [filteredProblems, setFilteredProblems] = useState<any[]>(problems);
-	const [selectedProblems, setSelectedProblems] = useState<string[]>([]);
-	const [filters, setFilters] = useState({
-		difficulty: "all",
-		topic: "all",
-		search: "",
-	});
+interface ProblemBrowserProps {
+  onSelectProblems?: (problems: string[]) => void;
+  onCreateQuiz?: (problems: string[]) => void;
+}
 
-	const difficulties = ["all", "Easy", "Medium", "Hard"];
-	const topics = [
-		"all",
-		...Array.from(new Set(problems.flatMap((p) => p.algorithms || []))),
-	];
+export default function ProblemBrowser({ onSelectProblems, onCreateQuiz }: ProblemBrowserProps) {
+  const [problems, setProblems] = useState<Problem[]>([]);
+  const [filteredProblems, setFilteredProblems] = useState<Problem[]>([]);
+  const [selectedProblems, setSelectedProblems] = useState<string[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [stats, setStats] = useState<any>(null);
+  const [filters, setFilters] = useState({
+    difficulty: '',
+    category: '',
+    search: ''
+  });
+  const [sortBy, setSortBy] = useState('title');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
+  const [showFilters, setShowFilters] = useState(false);
 
-	useEffect(() => {
-		let filtered = problems;
+  useEffect(() => {
+    loadProblems();
+  }, []);
 
-		if (filters.difficulty !== "all") {
-			filtered = filtered.filter((p) => p.difficulty === filters.difficulty);
-		}
+  const loadProblems = async () => {
+    try {
+      setLoading(true);
+      const result = await apiClient.getProblems();
+      
+      if (result.success) {
+        setProblems(result.data.problems);
+        setFilteredProblems(result.data.problems);
+        setStats(result.data.stats);
+      } else {
+        console.error('Failed to load problems:', result.error);
+      }
+    } catch (error) {
+      console.error('Error loading problems:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-		if (filters.topic !== "all") {
-			filtered = filtered.filter((p) => p.algorithms.includes(filters.topic));
-		}
+  useEffect(() => {
+    let filtered = problems;
 
-		if (filters.search) {
-			filtered = filtered.filter(
-				(p) =>
-					p.title.toLowerCase().includes(filters.search.toLowerCase()) ||
-					p.description.toLowerCase().includes(filters.search.toLowerCase()),
-			);
-		}
+    // Apply filters
+    if (filters.difficulty) {
+      filtered = filtered.filter(p => p.difficulty === filters.difficulty);
+    }
 
-		setFilteredProblems(filtered);
-	}, [filters, problems]);
+    if (filters.category) {
+      filtered = filtered.filter(p => p.category === filters.category);
+    }
 
-	const handleProblemSelect = (problemSlug: string) => {
-		const newSelected = selectedProblems.includes(problemSlug)
-			? selectedProblems.filter((id) => id !== problemSlug)
-			: [...selectedProblems, problemSlug];
+    if (filters.search) {
+      const searchLower = filters.search.toLowerCase();
+      filtered = filtered.filter(p => 
+        p.title.toLowerCase().includes(searchLower) ||
+        p.description.toLowerCase().includes(searchLower) ||
+        p.algorithms.some(algo => algo.toLowerCase().includes(searchLower))
+      );
+    }
 
-		setSelectedProblems(newSelected);
-		onSelectProblems?.(newSelected);
-	};
+    // Apply sorting
+    filtered.sort((a, b) => {
+      let comparison = 0;
+      switch (sortBy) {
+        case 'title':
+          comparison = a.title.localeCompare(b.title);
+          break;
+        case 'difficulty':
+          const difficultyOrder = { 'Easy': 1, 'Medium': 2, 'Hard': 3 };
+          comparison = (difficultyOrder[a.difficulty as keyof typeof difficultyOrder] || 0) - 
+                      (difficultyOrder[b.difficulty as keyof typeof difficultyOrder] || 0);
+          break;
+        case 'category':
+          comparison = a.category.localeCompare(b.category);
+          break;
+        default:
+          comparison = a.id - b.id;
+      }
+      return sortOrder === 'desc' ? -comparison : comparison;
+    });
 
-	const getDifficultyColor = (difficulty: string) => {
-		switch (difficulty) {
-			case "Easy":
-				return "text-green-600 bg-green-100";
-			case "Medium":
-				return "text-yellow-600 bg-yellow-100";
-			case "Hard":
-				return "text-red-600 bg-red-100";
-			default:
-				return "text-gray-600 bg-gray-100";
-		}
-	};
+    setFilteredProblems(filtered);
+  }, [problems, filters, sortBy, sortOrder]);
 
-	const handleCreateQuiz = () => {
-		if (selectedProblems.length > 0 && onCreateQuiz) {
-			onCreateQuiz(selectedProblems);
-		}
-	};
+  const getDifficultyColor = (difficulty: string) => {
+    switch (difficulty) {
+      case 'Easy':
+        return 'bg-green-100 text-green-800';
+      case 'Medium':
+        return 'bg-yellow-100 text-yellow-800';
+      case 'Hard':
+        return 'bg-red-100 text-red-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
+    }
+  };
 
-	return (
-		<div className="space-y-6">
-			{/* Header */}
-			<div className="flex items-center justify-between">
-				<div>
-					<h1 className="text-2xl font-bold text-gray-900">Problem Browser</h1>
-					<p className="text-gray-600">
-						Browse and select problems for your custom quiz
-					</p>
-				</div>
-				{selectedProblems.length > 0 && (
-					<button
-						onClick={handleCreateQuiz}
-						className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-					>
-						Create Quiz ({selectedProblems.length})
-					</button>
-				)}
-			</div>
+  const handleProblemSelect = (problemId: string) => {
+    setSelectedProblems(prev => 
+      prev.includes(problemId) 
+        ? prev.filter(id => id !== problemId)
+        : [...prev, problemId]
+    );
+  };
 
-			{/* Filters */}
-			<div className="bg-white p-6 rounded-lg shadow-sm border">
-				<div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-					<div>
-						<label className="block text-sm font-medium text-gray-700 mb-2">
-							Search
-						</label>
-						<input
-							type="text"
-							value={filters.search}
-							onChange={(e) =>
-								setFilters({ ...filters, search: e.target.value })
-							}
-							placeholder="Search problems..."
-							className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-						/>
-					</div>
+  const handleCreateQuiz = () => {
+    if (onCreateQuiz && selectedProblems.length > 0) {
+      onCreateQuiz(selectedProblems);
+    }
+  };
 
-					<div>
-						<label className="block text-sm font-medium text-gray-700 mb-2">
-							Difficulty
-						</label>
-						<select
-							value={filters.difficulty}
-							onChange={(e) =>
-								setFilters({ ...filters, difficulty: e.target.value })
-							}
-							className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-						>
-							{difficulties.map((difficulty) => (
-								<option key={difficulty} value={difficulty}>
-									{difficulty === "all" ? "All Difficulties" : difficulty}
-								</option>
-							))}
-						</select>
-					</div>
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center py-12">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+      </div>
+    );
+  }
 
-					<div>
-						<label className="block text-sm font-medium text-gray-700 mb-2">
-							Topic
-						</label>
-						<select
-							value={filters.topic}
-							onChange={(e) =>
-								setFilters({ ...filters, topic: e.target.value })
-							}
-							className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-						>
-							{topics.slice(0, 20).map((topic) => (
-								<option key={topic} value={topic}>
-									{topic === "all" ? "All Topics" : topic}
-								</option>
-							))}
-						</select>
-					</div>
+  return (
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div>
+          <h2 className="text-2xl font-bold text-gray-900">Problem Browser</h2>
+          <p className="text-gray-600">Browse and select problems to practice</p>
+        </div>
+        {selectedProblems.length > 0 && (
+          <button
+            onClick={handleCreateQuiz}
+            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+          >
+            Create Quiz ({selectedProblems.length} selected)
+          </button>
+        )}
+      </div>
 
-					<div className="flex items-end">
-						<button
-							onClick={() =>
-								setFilters({ difficulty: "all", topic: "all", search: "" })
-							}
-							className="px-4 py-2 text-sm text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-md transition-colors"
-						>
-							Clear Filters
-						</button>
-					</div>
-				</div>
-			</div>
+      {/* Stats */}
+      {stats && (
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="bg-blue-50 p-4 rounded-lg">
+            <div className="text-2xl font-bold text-blue-600">{stats.total}</div>
+            <div className="text-sm text-blue-600">Total Problems</div>
+          </div>
+          <div className="bg-green-50 p-4 rounded-lg">
+            <div className="text-2xl font-bold text-green-600">{stats.easy}</div>
+            <div className="text-sm text-green-600">Easy</div>
+          </div>
+          <div className="bg-yellow-50 p-4 rounded-lg">
+            <div className="text-2xl font-bold text-yellow-600">{stats.medium}</div>
+            <div className="text-sm text-yellow-600">Medium</div>
+          </div>
+          <div className="bg-red-50 p-4 rounded-lg">
+            <div className="text-2xl font-bold text-red-600">{stats.hard}</div>
+            <div className="text-sm text-red-600">Hard</div>
+          </div>
+        </div>
+      )}
 
-			{/* Results Summary */}
-			<div className="flex items-center justify-between text-sm text-gray-600">
-				<span>
-					Showing {filteredProblems.length} of {problems.length} problems
-				</span>
-				{selectedProblems.length > 0 && (
-					<span className="text-blue-600 font-medium">
-						{selectedProblems.length} selected
-					</span>
-				)}
-			</div>
+      {/* Search and Filters */}
+      <div className="bg-white p-4 rounded-lg border border-gray-200">
+        <div className="flex flex-col lg:flex-row gap-4">
+          {/* Search */}
+          <div className="flex-1">
+            <div className="relative">
+              <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+              <input
+                type="text"
+                placeholder="Search problems..."
+                value={filters.search}
+                onChange={(e) => setFilters({ ...filters, search: e.target.value })}
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+          </div>
 
-			{/* Problems List */}
-			<div className="space-y-4">
-				{filteredProblems.slice(0, 50).map((problem) => (
-					<div
-						key={problem.id}
-						className={`bg-white p-6 rounded-lg shadow-sm border cursor-pointer transition-all ${
-							selectedProblems.includes(
-								problem.title.toLowerCase().replace(/\s+/g, "-"),
-							)
-								? "border-blue-500 bg-blue-50"
-								: "border-gray-200 hover:border-gray-300 hover:shadow-md"
-						}`}
-						onClick={() =>
-							handleProblemSelect(
-								problem.title.toLowerCase().replace(/\s+/g, "-"),
-							)
-						}
-					>
-						<div className="flex items-start justify-between">
-							<div className="flex items-center space-x-4">
-								<input
-									type="checkbox"
-									checked={selectedProblems.includes(
-										problem.title.toLowerCase().replace(/\s+/g, "-"),
-									)}
-									onChange={() =>
-										handleProblemSelect(
-											problem.title.toLowerCase().replace(/\s+/g, "-"),
-										)
-									}
-									className="h-5 w-5 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-								/>
-								<div className="flex-1">
-									<div className="flex items-center space-x-3 mb-2">
-										<h3 className="text-lg font-semibold text-gray-900">
-											{problem.title}
-										</h3>
-										<span
-											className={`px-2 py-1 rounded-full text-xs font-medium ${getDifficultyColor(problem.difficulty)}`}
-										>
-											{problem.difficulty}
-										</span>
-									</div>
-									<p className="text-gray-600 text-sm mb-3 line-clamp-2">
-										{problem.description.slice(0, 200)}...
-									</p>
-									<div className="flex flex-wrap gap-2">
-										{problem.algorithms.slice(0, 4).map((topic: string) => (
-											<span
-												key={topic}
-												className="px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded-md"
-											>
-												{topic}
-											</span>
-										))}
-										{problem.algorithms.length > 4 && (
-											<span className="px-2 py-1 bg-gray-100 text-gray-500 text-xs rounded-md">
-												+{problem.algorithms.length - 4} more
-											</span>
-										)}
-									</div>
-								</div>
-							</div>
-							<div className="ml-4 flex flex-col items-end text-xs text-gray-500">
-								<span>#{problem.id}</span>
-								{problem.leetcodeUrl && (
-									<a
-										href={problem.leetcodeUrl}
-										target="_blank"
-										rel="noopener noreferrer"
-										onClick={(e) => e.stopPropagation()}
-										className="text-blue-600 hover:text-blue-800 mt-1"
-									>
-										View on LeetCode �
-									</a>
-								)}
-							</div>
-						</div>
-					</div>
-				))}
-			</div>
+          {/* Filter Toggle */}
+          <button
+            onClick={() => setShowFilters(!showFilters)}
+            className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50"
+          >
+            <FunnelIcon className="h-5 w-5" />
+            Filters
+            {showFilters ? <ChevronUpIcon className="h-4 w-4" /> : <ChevronDownIcon className="h-4 w-4" />}
+          </button>
+        </div>
 
-			{filteredProblems.length > 50 && (
-				<div className="text-center py-4">
-					<p className="text-gray-600">
-						Showing first 50 results. Use filters to narrow down your search.
-					</p>
-				</div>
-			)}
+        {/* Filter Options */}
+        {showFilters && (
+          <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4">
+            <select
+              value={filters.difficulty}
+              onChange={(e) => setFilters({ ...filters, difficulty: e.target.value })}
+              className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="">All Difficulties</option>
+              <option value="Easy">Easy</option>
+              <option value="Medium">Medium</option>
+              <option value="Hard">Hard</option>
+            </select>
 
-			{filteredProblems.length === 0 && (
-				<div className="text-center py-8">
-					<p className="text-gray-600">
-						No problems found matching your criteria.
-					</p>
-					<button
-						onClick={() =>
-							setFilters({ difficulty: "all", topic: "all", search: "" })
-						}
-						className="mt-2 text-blue-600 hover:text-blue-800"
-					>
-						Clear filters to show all problems
-					</button>
-				</div>
-			)}
-		</div>
-	);
+            <select
+              value={filters.category}
+              onChange={(e) => setFilters({ ...filters, category: e.target.value })}
+              className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="">All Categories</option>
+              {stats?.categories?.map((category: string) => (
+                <option key={category} value={category}>{category}</option>
+              ))}
+            </select>
+
+            <select
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value)}
+              className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="title">Sort by Title</option>
+              <option value="difficulty">Sort by Difficulty</option>
+              <option value="category">Sort by Category</option>
+            </select>
+          </div>
+        )}
+      </div>
+
+      {/* Problems Table */}
+      <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="min-w-full divide-y divide-gray-200">
+            <thead className="bg-gray-50">
+              <tr>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <input
+                    type="checkbox"
+                    onChange={(e) => {
+                      if (e.target.checked) {
+                        setSelectedProblems(filteredProblems.map(p => p.id.toString()));
+                      } else {
+                        setSelectedProblems([]);
+                      }
+                    }}
+                    checked={selectedProblems.length === filteredProblems.length && filteredProblems.length > 0}
+                    className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                  />
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Problem
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Difficulty
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Category
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Algorithms
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Actions
+                </th>
+              </tr>
+            </thead>
+            <tbody className="bg-white divide-y divide-gray-200">
+              {filteredProblems.map((problem) => (
+                <tr key={problem.id} className="hover:bg-gray-50">
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <input
+                      type="checkbox"
+                      checked={selectedProblems.includes(problem.id.toString())}
+                      onChange={() => handleProblemSelect(problem.id.toString())}
+                      className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                    />
+                  </td>
+                  <td className="px-6 py-4">
+                    <div>
+                      <div className="text-sm font-medium text-gray-900">{problem.title}</div>
+                      <div className="text-sm text-gray-500 truncate max-w-xs">{problem.description}</div>
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <span className={`px-2 py-1 text-xs font-medium rounded-full ${getDifficultyColor(problem.difficulty)}`}>
+                      {problem.difficulty}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    {problem.category}
+                  </td>
+                  <td className="px-6 py-4">
+                    <div className="flex flex-wrap gap-1">
+                      {problem.algorithms.slice(0, 2).map((algo) => (
+                        <span key={algo} className="px-2 py-1 bg-blue-100 text-blue-700 text-xs rounded">
+                          {algo}
+                        </span>
+                      ))}
+                      {problem.algorithms.length > 2 && (
+                        <span className="px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded">
+                          +{problem.algorithms.length - 2}
+                        </span>
+                      )}
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                    <a
+                      href={problem.leetcodeUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-blue-600 hover:text-blue-900 mr-3"
+                    >
+                      LeetCode
+                    </a>
+                    <button
+                      onClick={() => handleProblemSelect(problem.id.toString())}
+                      className="text-green-600 hover:text-green-900"
+                    >
+                      Practice
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* Results Summary */}
+      <div className="text-sm text-gray-600">
+        Showing {filteredProblems.length} of {problems.length} problems
+        {selectedProblems.length > 0 && ` • ${selectedProblems.length} selected`}
+      </div>
+    </div>
+  );
 }

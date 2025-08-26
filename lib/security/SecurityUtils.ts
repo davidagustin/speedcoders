@@ -142,7 +142,7 @@ export class CSRFProtection {
 export class InputSanitizer {
   private static readonly HTML_REGEX = /<[^>]*>/g;
   private static readonly SCRIPT_REGEX = /<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi;
-  private static readonly SQL_INJECTION_REGEX = /(\b(SELECT|INSERT|UPDATE|DELETE|DROP|CREATE|ALTER|EXEC|UNION|SCRIPT)\b)|('|\\')|(;)|(--)|(\|)|(\*)/gi;
+  private static readonly SQL_INJECTION_REGEX = /(\b(SELECT|INSERT|UPDATE|DELETE|DROP|CREATE|ALTER|EXEC|UNION|SCRIPT)\b)|('|\\\\')|(;)|(--)|(\|)|(\*)/gi;
 
   static sanitizeHTML(input: string): string {
     if (typeof input !== 'string') return '';

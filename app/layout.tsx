@@ -3,7 +3,9 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { NextAuthProvider } from "./providers";
 import HeaderBar from "@/components/HeaderBar";
+import SideNavigation from "@/components/SideNavigation";
 import Footer from "@/components/Footer";
+import { ToastProvider } from "@/components/providers/ToastProvider";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -44,13 +46,20 @@ export default function RootLayout({
 		<html lang="en" className="h-full">
 			<body className={`${inter.className} h-full bg-gray-50`}>
 				<NextAuthProvider session={null}>
-					<div className="min-h-screen flex flex-col">
-						<HeaderBar />
-						<main className="flex-1 pt-[72px]">
-							{children}
-						</main>
-						<Footer />
-					</div>
+					<ToastProvider>
+						<div className="min-h-screen flex flex-col">
+							<HeaderBar />
+							<div className="flex flex-1 pt-[72px]">
+								<SideNavigation />
+								<main className="flex-1 lg:ml-64 transition-all duration-300">
+									<div className="p-4 lg:p-6">
+										{children}
+									</div>
+								</main>
+							</div>
+							<Footer />
+						</div>
+					</ToastProvider>
 				</NextAuthProvider>
 			</body>
 		</html>

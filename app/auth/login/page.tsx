@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import toast from "react-hot-toast";
+import { apiClient } from "@/utils/api/client";
 
 export default function LoginPage() {
 	const router = useRouter();
@@ -18,20 +19,14 @@ export default function LoginPage() {
 		setIsLoading(true);
 
 		try {
-			const res = await fetch("/api/auth/login", {
-				method: "POST",
-				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify(formData),
-			});
+			const response = await apiClient.login(formData.email, formData.password);
 
-			const data = await res.json();
-
-			if (!res.ok) {
-				throw new Error(data.error || "Login failed");
+			if (!response.success) {
+				throw new Error(response.error || "Login failed");
 			}
 
-			localStorage.setItem("token", data.token);
-			localStorage.setItem("user", JSON.stringify(data.user));
+			localStorage.setItem("token", response.data.token);
+			localStorage.setItem("user", JSON.stringify(response.data.user));
 
 			toast.success("Login successful!");
 			router.push("/dashboard");
