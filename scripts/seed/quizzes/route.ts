@@ -47,7 +47,7 @@ export async function POST(request: NextRequest) {
 			}
 		];
 
-		const createdQuizzes = [];
+		const createdQuizzes: any[] = [];
 		for (const quiz of quizzes) {
 			const createdQuiz = await DatabaseService.createQuiz(quiz);
 			createdQuizzes.push(createdQuiz);
