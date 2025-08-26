@@ -193,7 +193,7 @@ export class AIRecommendationEngine {
       // Check if user has prerequisites
       const hasPrereqs = path.prerequisites.every(prereq => 
         profile.strongCategories.includes(prereq) || 
-        profile.algorithmMastery.get(prereq) ?? 0 > 60
+        ((profile.algorithmMastery.get(prereq) ?? 0) > 60)
       );
 
       // Check appropriate difficulty

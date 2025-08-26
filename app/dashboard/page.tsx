@@ -542,10 +542,8 @@ export default function Dashboard() {
 
         {activeTab === 'browser' && (
           <ProblemBrowser
-            problems={comprehensiveProblems}
-            onSelectProblem={handleSelectProblem}
-            selectedProblems={selectedProblems}
-            onToggleSelection={handleToggleSelection}
+            onSelectProblems={setSelectedProblems}
+            onCreateQuiz={handleCreateQuiz}
           />
         )}
 

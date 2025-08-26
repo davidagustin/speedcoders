@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth/next-auth';
 import { prisma } from '@/app/lib/prisma';
-import { problems as allProblems } from '@/lib/data/problems';
+import { comprehensiveProblems } from '@/lib/data/comprehensive-problems';
 
 interface RouteParams {
   params: Promise<{
@@ -43,17 +43,29 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
       return NextResponse.json({ error: 'Quiz is not active' }, { status: 400 });
     }
 
-    // Calculate score based on algorithm selection accuracy
-    const problems = quiz.problemIds.map((id: string) => 
-      allProblems.find(p => p.id === id)
-    ).filter(Boolean);
+    // Get quiz questions with problems from database
+    const quizQuestions = await prisma.quizQuestion.findMany({
+      where: { quizId: id },
+      include: { problem: true },
+      orderBy: { order: 'asc' }
+    });
+
+    // Map database problems to comprehensive problems for algorithm data
+    const problems = quizQuestions.map(qq => {
+      const dbProblem = qq.problem;
+      const compProblem = comprehensiveProblems.find(p => p.title === dbProblem.title);
+      return compProblem ? { ...compProblem, dbId: dbProblem.id } : null;
+    }).filter(Boolean);
 
     let correctAnswers = 0;
     const problemResults = [];
 
     for (let i = 0; i < problems.length; i++) {
       const problem = problems[i];
+      if (!problem) continue;
+      
       const userAlgorithms = selectedAlgorithms[problem.id] || [];
+      // Get algorithms directly from problem data
       const correctAlgorithms = problem.algorithms || [];
       
       // Simple scoring: if at least 70% of selected algorithms are correct
@@ -82,38 +94,32 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
     const scorePercentage = Math.round((correctAnswers / problems.length) * 100);
     const overallAccuracy = problemResults.reduce((sum, result) => sum + result.accuracy, 0) / problemResults.length * 100;
 
-    // Update quiz status
+    // Update quiz status to inactive
     const updatedQuiz = await prisma.quiz.update({
       where: {
         id: id,
       },
       data: {
-        status: 'completed',
-        completedAt: new Date(),
-        score: scorePercentage,
-        timeSpent,
+        isActive: false,
       },
     });
 
-    // Create quiz result record
-    const result = await prisma.quizResult.create({
+    // Create quiz attempt record
+    const attempt = await prisma.quizAttempt.create({
       data: {
         quizId: id,
         userId: session.user.email,
         score: scorePercentage,
-        correctAnswers,
-        totalQuestions: problems.length,
         timeSpent,
-        accuracy: Math.round(overallAccuracy),
-        problemResults: JSON.stringify(problemResults),
-        selectedAlgorithms: JSON.stringify(selectedAlgorithms),
+        completed: true,
+        completedAt: new Date(),
       },
     });
 
     return NextResponse.json({
       quiz: updatedQuiz,
       result: {
-        id: result.id,
+        id: attempt.id,
         scorePercentage,
         correctAnswers,
         totalQuestions: problems.length,

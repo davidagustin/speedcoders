@@ -6,48 +6,53 @@ export async function POST(request: Request) {
   try {
     const { userId, problemCount = 10, difficulty = 'Mixed', category = null, specificProblem = null, specificProblems = null } = await request.json();
 
-    if (!userId) {
-      return NextResponse.json({ error: 'User ID required' }, { status: 400 });
-    }
+    // Type the selectedProblems array properly
+    let selectedProblems: typeof comprehensiveProblems = [];
 
-    // Filter problems based on difficulty and category
-    let filteredProblems = comprehensiveProblems;
-    let selectedProblems = [];
-    
-    // Handle specific problems
     if (specificProblems && Array.isArray(specificProblems)) {
-      selectedProblems = comprehensiveProblems.filter(problem => 
-        specificProblems.includes(problem.title)
+      // Use specific problems if provided
+      selectedProblems = comprehensiveProblems.filter(p => 
+        specificProblems.includes(p.title)
       );
     } else if (specificProblem) {
+      // Use single specific problem if provided
       const problem = comprehensiveProblems.find(p => p.title === specificProblem);
       if (problem) {
         selectedProblems = [problem];
       }
     } else {
-      // Filter by difficulty and category
+      // Filter problems based on criteria
+      let filteredProblems = comprehensiveProblems;
+
       if (difficulty !== 'Mixed') {
-        filteredProblems = filteredProblems.filter(problem => problem.difficulty === difficulty);
+        filteredProblems = filteredProblems.filter(p => p.difficulty === difficulty);
       }
-      
+
       if (category) {
-        filteredProblems = filteredProblems.filter(problem => 
-          problem.algorithms.includes(category)
+        filteredProblems = filteredProblems.filter(p => 
+          p.algorithms.includes(category)
         );
       }
 
-      // Get random problems
-      const shuffled = [...filteredProblems].sort(() => 0.5 - Math.random());
+      // Shuffle and select problems
+      const shuffled = filteredProblems.sort(() => Math.random() - 0.5);
       selectedProblems = shuffled.slice(0, Math.min(problemCount, shuffled.length));
     }
 
-    // Store problems in DB if not exists
+    if (selectedProblems.length === 0) {
+      return NextResponse.json({ error: 'No problems found matching criteria' }, { status: 400 });
+    }
+
+    // Create or update problems in database
     for (const problem of selectedProblems) {
       await prisma.problem.upsert({
         where: { title: problem.title },
         update: {
+          difficulty: problem.difficulty,
+          category: problem.algorithms[0] || 'General',
           description: problem.description,
           solutions: JSON.stringify(problem.editorial),
+          leetcodeUrl: problem.leetcodeUrl,
         },
         create: {
           title: problem.title,
@@ -62,68 +67,59 @@ export async function POST(request: Request) {
       });
     }
 
-    // Create quiz with enhanced title
-    const quizTitle = category 
-      ? `${category} Practice Quiz - ${new Date().toLocaleDateString()}`
-      : difficulty !== 'Mixed'
-      ? `${difficulty} Level Quiz - ${new Date().toLocaleDateString()}`
-      : `Mixed Difficulty Quiz - ${new Date().toLocaleDateString()}`;
-
+    // Create quiz
     const quiz = await prisma.quiz.create({
       data: {
-        title: quizTitle,
-        description: `LeetCode Algorithm Quiz with ${selectedProblems.length} problems`,
-        timeLimit: Math.max(15, selectedProblems.length * 2), // 2 minutes per problem minimum
+        title: `Quiz - ${selectedProblems.length} problems`,
+        description: `Quiz with ${selectedProblems.length} problems`,
         difficulty: difficulty,
         category: category,
+        timeLimit: selectedProblems.length * 5 * 60, // 5 minutes per problem
         createdBy: userId,
+        isActive: true,
       },
     });
 
-    // Add questions to quiz
+    // Create quiz questions
     for (let i = 0; i < selectedProblems.length; i++) {
-      const problem = await prisma.problem.findFirst({
-        where: { title: selectedProblems[i].title }
+      await prisma.quizQuestion.create({
+        data: {
+          quizId: quiz.id,
+          problemId: (await prisma.problem.findUnique({
+            where: { title: selectedProblems[i].title }
+          }))?.id || 1,
+          order: i + 1,
+        },
       });
-      
-      if (problem) {
-        await prisma.quizQuestion.create({
-          data: {
-            quizId: quiz.id,
-            problemId: problem.id,
-            order: i + 1,
-          },
-        });
-      }
     }
 
     // Create quiz attempt
     const attempt = await prisma.quizAttempt.create({
       data: {
+        userId: userId,
         quizId: quiz.id,
-        userId,
         score: 0,
         timeSpent: 0,
+        completed: false,
+        startedAt: new Date(),
+        completedAt: null,
       },
-      include: {
+    });
+
+    return NextResponse.json({
+      success: true,
+      attempt: {
+        id: attempt.id,
         quiz: {
-          include: {
-            questions: {
-              include: {
-                problem: true,
-              },
-              orderBy: {
-                order: 'asc',
-              },
-            },
-          },
+          id: quiz.id,
+          title: quiz.title,
+          problemCount: selectedProblems.length,
         },
       },
     });
 
-    return NextResponse.json({ attempt });
   } catch (error) {
-    console.error(error);
-    return NextResponse.json({ error: 'Failed to start quiz' }, { status: 500 });
+    console.error('Error creating quiz:', error);
+    return NextResponse.json({ error: 'Failed to create quiz' }, { status: 500 });
   }
 }

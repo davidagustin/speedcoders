@@ -7,6 +7,11 @@ interface QuizCreatorProps {
     problemCount: number
     difficulty: string
     category: string | null
+    timeLimit?: number
+    scoringMode: string
+    adaptiveDifficulty: boolean
+    includeHints: boolean
+    includeSolutions: boolean
   }) => void
   isLoading: boolean
 }
@@ -27,12 +32,22 @@ export default function QuizCreator({ onCreateQuiz, isLoading }: QuizCreatorProp
   const [problemCount, setProblemCount] = useState(10)
   const [difficulty, setDifficulty] = useState('Mixed')
   const [category, setCategory] = useState<string | null>(null)
+  const [timeLimit, setTimeLimit] = useState(0) // 0 = no time limit
+  const [scoringMode, setScoringMode] = useState('standard')
+  const [adaptiveDifficulty, setAdaptiveDifficulty] = useState(false)
+  const [includeHints, setIncludeHints] = useState(true)
+  const [includeSolutions, setIncludeSolutions] = useState(false)
 
   const handleCreateQuiz = () => {
     onCreateQuiz({
       problemCount,
       difficulty,
-      category
+      category,
+      timeLimit: timeLimit > 0 ? timeLimit : undefined,
+      scoringMode,
+      adaptiveDifficulty,
+      includeHints,
+      includeSolutions
     })
   }
 
@@ -102,6 +117,84 @@ export default function QuizCreator({ onCreateQuiz, isLoading }: QuizCreatorProp
         </select>
       </div>
 
+      {/* Time Limit */}
+      <div className="mb-6">
+        <label className="block text-sm font-medium text-gray-700 mb-2">
+          Time Limit (Optional)
+        </label>
+        <select
+          value={timeLimit}
+          onChange={(e) => setTimeLimit(Number(e.target.value))}
+          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+        >
+          <option value={0}>No Time Limit</option>
+          <option value={15}>15 minutes</option>
+          <option value={30}>30 minutes</option>
+          <option value={45}>45 minutes</option>
+          <option value={60}>60 minutes</option>
+          <option value={90}>90 minutes</option>
+        </select>
+      </div>
+
+      {/* Scoring Mode */}
+      <div className="mb-6">
+        <label className="block text-sm font-medium text-gray-700 mb-2">
+          Scoring Mode
+        </label>
+        <select
+          value={scoringMode}
+          onChange={(e) => setScoringMode(e.target.value)}
+          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+        >
+          <option value="standard">Standard (Accuracy based)</option>
+          <option value="time-weighted">Time Weighted (Speed bonus)</option>
+          <option value="competitive">Competitive (Contest style)</option>
+          <option value="learning">Learning Mode (Hints encouraged)</option>
+        </select>
+      </div>
+
+      {/* Advanced Options */}
+      <div className="mb-6">
+        <h3 className="text-sm font-medium text-gray-700 mb-3">Advanced Options</h3>
+        <div className="space-y-3">
+          <label className="flex items-center">
+            <input
+              type="checkbox"
+              checked={adaptiveDifficulty}
+              onChange={(e) => setAdaptiveDifficulty(e.target.checked)}
+              className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+            />
+            <span className="ml-2 text-sm text-gray-700">
+              Adaptive Difficulty (Adjust based on performance)
+            </span>
+          </label>
+          
+          <label className="flex items-center">
+            <input
+              type="checkbox"
+              checked={includeHints}
+              onChange={(e) => setIncludeHints(e.target.checked)}
+              className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+            />
+            <span className="ml-2 text-sm text-gray-700">
+              Include Hints
+            </span>
+          </label>
+          
+          <label className="flex items-center">
+            <input
+              type="checkbox"
+              checked={includeSolutions}
+              onChange={(e) => setIncludeSolutions(e.target.checked)}
+              className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+            />
+            <span className="ml-2 text-sm text-gray-700">
+              Include Solutions (After completion)
+            </span>
+          </label>
+        </div>
+      </div>
+
       {/* Time Estimate */}
       <div className="mb-6 p-4 bg-blue-50 rounded-lg">
         <div className="flex items-center justify-between">
@@ -124,25 +217,61 @@ export default function QuizCreator({ onCreateQuiz, isLoading }: QuizCreatorProp
         <h3 className="text-sm font-medium text-gray-900 mb-3">Quick Start</h3>
         <div className="grid grid-cols-2 gap-2">
           <button
-            onClick={() => onCreateQuiz({ problemCount: 5, difficulty: 'Easy', category: null })}
+            onClick={() => onCreateQuiz({ 
+              problemCount: 5, 
+              difficulty: 'Easy', 
+              category: null,
+              timeLimit: 25,
+              scoringMode: 'standard',
+              adaptiveDifficulty: false,
+              includeHints: true,
+              includeSolutions: true
+            })}
             className="text-sm bg-green-100 text-green-700 py-2 px-3 rounded hover:bg-green-200 transition-colors"
           >
             Easy Practice (5)
           </button>
           <button
-            onClick={() => onCreateQuiz({ problemCount: 10, difficulty: 'Mixed', category: null })}
+            onClick={() => onCreateQuiz({ 
+              problemCount: 10, 
+              difficulty: 'Mixed', 
+              category: null, 
+              timeLimit: 30,
+              scoringMode: 'standard',
+              adaptiveDifficulty: true,
+              includeHints: false,
+              includeSolutions: false
+            })}
             className="text-sm bg-yellow-100 text-yellow-700 py-2 px-3 rounded hover:bg-yellow-200 transition-colors"
           >
             Mixed Challenge (10)
           </button>
           <button
-            onClick={() => onCreateQuiz({ problemCount: 15, difficulty: 'Medium', category: null })}
+            onClick={() => onCreateQuiz({ 
+              problemCount: 15, 
+              difficulty: 'Medium', 
+              category: null, 
+              timeLimit: 45,
+              scoringMode: 'time-weighted',
+              adaptiveDifficulty: false,
+              includeHints: false,
+              includeSolutions: false
+            })}
             className="text-sm bg-orange-100 text-orange-700 py-2 px-3 rounded hover:bg-orange-200 transition-colors"
           >
             Medium Focus (15)
           </button>
           <button
-            onClick={() => onCreateQuiz({ problemCount: 20, difficulty: 'Mixed', category: null })}
+            onClick={() => onCreateQuiz({ 
+              problemCount: 20, 
+              difficulty: 'Mixed', 
+              category: null, 
+              timeLimit: 60,
+              scoringMode: 'competitive',
+              adaptiveDifficulty: true,
+              includeHints: false,
+              includeSolutions: false
+            })}
             className="text-sm bg-red-100 text-red-700 py-2 px-3 rounded hover:bg-red-200 transition-colors"
           >
             Full Challenge (20)

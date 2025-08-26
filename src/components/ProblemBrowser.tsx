@@ -189,7 +189,7 @@ export default function ProblemBrowser({ onSelectProblems, onCreateQuiz }: Probl
                     {problem.description.slice(0, 200)}...
                   </p>
                   <div className="flex flex-wrap gap-2">
-                    {problem.algorithms.slice(0, 4).map((topic) => (
+                    {problem.algorithms.slice(0, 4).map((topic: string) => (
                       <span
                         key={topic}
                         className="px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded-md"

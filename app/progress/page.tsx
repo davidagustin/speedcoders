@@ -5,7 +5,7 @@ import {
   ChartBarIcon, 
   TrophyIcon, 
   ClockIcon, 
-  TrendingUpIcon,
+  ArrowTrendingUpIcon,
   CalendarIcon,
   FireIcon,
   StarIcon,

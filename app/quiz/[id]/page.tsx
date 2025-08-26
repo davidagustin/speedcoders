@@ -17,9 +17,9 @@ import { comprehensiveProblems as allProblems } from "@/lib/data/comprehensive-p
 import EditorialView from "@/app/components/EditorialView";
 
 interface QuizPageProps {
-  params: {
+  params: Promise<{
     id: string;
-  };
+  }>;
 }
 
 export default function QuizPage({ params }: QuizPageProps) {
@@ -35,19 +35,28 @@ export default function QuizPage({ params }: QuizPageProps) {
   const [loading, setLoading] = useState(true);
   const [showEditorial, setShowEditorial] = useState(false);
   const [currentEditorial, setCurrentEditorial] = useState<any>(null);
+  const [quizId, setQuizId] = useState<string>('');
 
   useEffect(() => {
-    if (!session) return;
+    const getParams = async () => {
+      const resolvedParams = await params;
+      setQuizId(resolvedParams.id);
+    };
+    getParams();
+  }, [params]);
+
+  useEffect(() => {
+    if (!session || !quizId) return;
 
     const fetchQuiz = async () => {
       try {
-        const response = await fetch(`/api/quiz/${params.id}`);
+        const response = await fetch(`/api/quiz/${quizId}`);
         if (response.ok) {
           const quizData = await response.json();
           setQuiz(quizData);
           
           const quizProblems = quizData.problemIds.map((id: string) => 
-            allProblems.find(p => p.id === id)
+            allProblems.find(p => p.id === parseInt(id))
           ).filter(Boolean);
           
           setProblems(quizProblems);
@@ -65,7 +74,7 @@ export default function QuizPage({ params }: QuizPageProps) {
     };
 
     fetchQuiz();
-  }, [params.id, session, router]);
+  }, [quizId, session, router]);
 
   useEffect(() => {
     if (timeLeft > 0 && !isPaused && !isSubmitted) {
@@ -108,7 +117,7 @@ export default function QuizPage({ params }: QuizPageProps) {
     setIsPaused(true);
 
     try {
-      const response = await fetch(`/api/quiz/${params.id}/submit`, {
+      const response = await fetch(`/api/quiz/${quizId}/submit`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -121,7 +130,7 @@ export default function QuizPage({ params }: QuizPageProps) {
 
       if (response.ok) {
         const result = await response.json();
-        router.push(`/quiz/${params.id}/results`);
+        router.push(`/quiz/${quizId}/results`);
       } else {
         console.error("Failed to submit quiz");
       }

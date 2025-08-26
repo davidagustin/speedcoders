@@ -1,120 +1,124 @@
 import { NextResponse } from 'next/server'
 import { comprehensiveProblems } from '@/lib/data/comprehensive-problems'
+import { prisma } from '@/app/lib/prisma'
 
 interface QuizConfig {
   userId: string
-  difficulty?: 'Easy' | 'Medium' | 'Hard' | 'Mixed'
-  category?: string
   problemCount?: number
-  timeLimit?: number
-  specificProblems?: string[]
-  includeHints?: boolean
+  difficulty?: string
+  category?: string
   includeSolutions?: boolean
-}
-
-interface Quiz {
-  id: string
-  userId: string
-  problems: any[]
-  timeLimit: number
-  startTime: string
-  status: 'active' | 'completed' | 'abandoned'
+  includeHints?: boolean
+  timeLimit?: number
 }
 
 export async function POST(request: Request) {
   try {
-    const body: QuizConfig = await request.json()
-    const { 
-      userId, 
-      difficulty = 'Mixed', 
-      category, 
-      problemCount = 10, 
-      timeLimit = 30,
-      specificProblems,
-      includeHints = true,
-      includeSolutions = true
-    } = body
+    const config: QuizConfig = await request.json()
+    const {
+      userId,
+      problemCount = 10,
+      difficulty = 'Mixed',
+      category = null,
+      includeSolutions = false,
+      includeHints = false,
+      timeLimit = 30
+    } = config
 
     if (!userId) {
-      return NextResponse.json(
-        { error: 'User ID is required' },
-        { status: 400 }
+      return NextResponse.json({ error: 'User ID required' }, { status: 400 })
+    }
+
+    // Filter problems based on criteria
+    let filteredProblems = comprehensiveProblems
+
+    if (difficulty !== 'Mixed') {
+      filteredProblems = filteredProblems.filter(p => p.difficulty === difficulty)
+    }
+
+    if (category) {
+      filteredProblems = filteredProblems.filter(p => 
+        p.algorithms.includes(category)
       )
     }
 
-    let selectedProblems = comprehensiveProblems
+    // Shuffle and select problems
+    const shuffled = filteredProblems.sort(() => Math.random() - 0.5)
+    const selectedProblems = shuffled.slice(0, Math.min(problemCount, shuffled.length))
 
-    // Filter by specific problems if provided
-    if (specificProblems && specificProblems.length > 0) {
-      selectedProblems = comprehensiveProblems.filter(p => 
-        specificProblems.includes(p.title)
-      )
-    } else {
-      // Filter by difficulty
-      if (difficulty !== 'Mixed') {
-        selectedProblems = selectedProblems.filter(p => p.difficulty === difficulty)
-      }
-
-      // Filter by category
-      if (category) {
-        selectedProblems = selectedProblems.filter(p => p.category === category || p.algorithms.includes(category))
-      }
-    }
-
-    // Ensure we have enough problems
     if (selectedProblems.length === 0) {
-      return NextResponse.json(
-        { error: 'No problems found with the specified criteria' },
-        { status: 404 }
-      )
+      return NextResponse.json({ error: 'No problems found matching criteria' }, { status: 400 })
     }
 
-    // Randomly select problems
-    const shuffled = [...selectedProblems].sort(() => Math.random() - 0.5)
-    const quizProblems = shuffled.slice(0, Math.min(problemCount, selectedProblems.length))
+    // Transform problems for quiz format
+    const quizProblems = selectedProblems.map(p => ({
+      id: p.id,
+      title: p.title,
+      difficulty: p.difficulty,
+      category: p.algorithms[0] || 'General',
+      description: p.description,
+      examples: (p as any).examples || [],
+      constraints: (p as any).constraints || [],
+      solutions: includeSolutions ? p.editorial.solutions : [],
+      hints: includeHints ? [] : [], // No hints available in current structure
+      keyInsights: p.algorithms, // Use algorithms as key insights
+      editorial: p.editorial,
+      leetcodeUrl: p.leetcodeUrl
+    }))
 
-    // Create quiz object
-    const quiz: Quiz = {
-      id: `quiz_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-      userId,
-      problems: quizProblems.map(p => ({
-        id: p.title.toLowerCase().replace(/\s+/g, '-'),
-        title: p.title,
-        difficulty: p.difficulty,
-        category: p.category,
-        description: p.description,
-        examples: p.examples,
-        constraints: p.constraints,
-        solutions: includeSolutions ? p.solutions : [],
-        hints: includeHints ? (p.hints || []) : [],
-        keyInsights: p.keyInsights || [],
-        leetcodeUrl: p.leetcodeUrl
-      })),
-      timeLimit: timeLimit * 60, // Convert to seconds
-      startTime: new Date().toISOString(),
-      status: 'active'
+    // Create quiz in database
+    const quiz = await prisma.quiz.create({
+      data: {
+        title: `Enhanced Quiz - ${selectedProblems.length} problems`,
+        description: `Quiz with ${selectedProblems.length} problems`,
+        difficulty: difficulty,
+        category: category,
+        timeLimit: timeLimit * 60, // Convert to seconds
+        createdBy: userId,
+        isActive: true,
+      },
+    })
+
+    // Create quiz questions
+    for (let i = 0; i < selectedProblems.length; i++) {
+      await prisma.quizQuestion.create({
+        data: {
+          quizId: quiz.id,
+          problemId: selectedProblems[i].id,
+          order: i + 1,
+        },
+      })
     }
+
+    // Create quiz attempt
+    const attempt = await prisma.quizAttempt.create({
+      data: {
+        userId: userId,
+        quizId: quiz.id,
+        score: 0,
+        timeSpent: 0,
+        completed: false,
+        startedAt: new Date(),
+        completedAt: null,
+      },
+    })
 
     return NextResponse.json({
       success: true,
-      quiz,
-      stats: {
-        totalProblems: quizProblems.length,
-        difficultyBreakdown: {
-          easy: quizProblems.filter(p => p.difficulty === 'Easy').length,
-          medium: quizProblems.filter(p => p.difficulty === 'Medium').length,
-          hard: quizProblems.filter(p => p.difficulty === 'Hard').length
+      attempt: {
+        id: attempt.id,
+        quiz: {
+          id: quiz.id,
+          title: quiz.title,
+          problemCount: selectedProblems.length,
         },
-        categories: [...new Set(quizProblems.map(p => p.category))]
-      }
+        problems: quizProblems
+      },
     })
 
   } catch (error) {
-    console.error('Error starting quiz:', error)
-    return NextResponse.json(
-      { error: 'Failed to start quiz' },
-      { status: 500 }
-    )
+    console.error('Error creating enhanced quiz:', error)
+    return NextResponse.json({ error: 'Failed to create quiz' }, { status: 500 })
   }
 }
 

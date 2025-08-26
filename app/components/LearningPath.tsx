@@ -44,18 +44,11 @@ export default function LearningPath() {
         .eq('user_id', user.id)
         .eq('completed', true)
 
-      const completedProblems = new Set()
-      if (attempts) {
-        attempts.forEach(attempt => {
-          attempt.quiz?.questions?.forEach((question: any) => {
-            completedProblems.add(question.problem?.title)
-          })
-        })
-      }
-
-      // Generate learning path based on user's level
-      const userLevel = getUserLevel(attempts || [])
-      const recommendedProblems = getRecommendedProblems(userLevel, selectedCategory, completedProblems)
+      const completedProblems = new Set<string>(
+        attempts ? attempts.map((attempt: any) => attempt.problemTitle).filter(Boolean) : []
+      );
+      const userLevel = getUserLevel(attempts || []);
+      const recommendedProblems = getRecommendedProblems(userLevel, selectedCategory, completedProblems as Set<string>)
 
       setLearningPath(recommendedProblems)
     } catch (error) {

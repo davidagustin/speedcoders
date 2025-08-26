@@ -3,6 +3,24 @@ import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { redis, CACHE_KEYS, CACHE_TTL } from '@/utils/redis'
 
+interface QuizAttempt {
+  id: string;
+  score: number;
+  completed: boolean;
+  started_at: string;
+  quiz?: {
+    title: string;
+    difficulty: string;
+  };
+}
+
+interface Quiz {
+  id: string;
+  title: string;
+  difficulty: string;
+  time_limit: number;
+}
+
 export default async function LeetCodePage() {
   const supabase = await createClient()
 
@@ -15,25 +33,27 @@ export default async function LeetCodePage() {
   }
 
   // Get available quizzes from cache or database
-  let availableQuizzes = await redis.get(CACHE_KEYS.QUIZ('available'))
+  let availableQuizzes: Quiz[] = []
+  const cachedQuizzes = await redis.get(CACHE_KEYS.QUIZ('available'))
   
-  if (!availableQuizzes) {
+  if (!cachedQuizzes) {
     const { data: quizzes } = await supabase
       .from('quizzes')
       .select('*')
       .eq('is_active', true)
       .order('created_at', { ascending: false })
 
-    availableQuizzes = quizzes || []
+    availableQuizzes = (quizzes as Quiz[]) || []
     await redis.setex(CACHE_KEYS.QUIZ('available'), CACHE_TTL.QUIZ, JSON.stringify(availableQuizzes))
   } else {
-    availableQuizzes = JSON.parse(availableQuizzes as string)
+    availableQuizzes = JSON.parse(cachedQuizzes as string) as Quiz[]
   }
 
   // Get user's recent attempts
-  let userProgress = await redis.get(CACHE_KEYS.USER_PROGRESS(user.id))
+  let userProgress: QuizAttempt[] = []
+  const cachedProgress = await redis.get(CACHE_KEYS.USER_PROGRESS(user.id))
   
-  if (!userProgress) {
+  if (!cachedProgress) {
     const { data: attempts } = await supabase
       .from('quiz_attempts')
       .select(`
@@ -44,10 +64,10 @@ export default async function LeetCodePage() {
       .order('started_at', { ascending: false })
       .limit(5)
 
-    userProgress = attempts || []
+    userProgress = (attempts as QuizAttempt[]) || []
     await redis.setex(CACHE_KEYS.USER_PROGRESS(user.id), CACHE_TTL.USER_PROGRESS, JSON.stringify(userProgress))
   } else {
-    userProgress = JSON.parse(userProgress as string)
+    userProgress = JSON.parse(cachedProgress as string) as QuizAttempt[]
   }
 
   return (
@@ -62,7 +82,10 @@ export default async function LeetCodePage() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Quiz Creator */}
           <div className="lg:col-span-1">
-            <QuizCreatorWrapper />
+            <div className="bg-white rounded-lg shadow p-6">
+              <h3 className="text-lg font-semibold mb-4">Quiz Creator</h3>
+              <p className="text-gray-600">Quiz creation functionality coming soon!</p>
+            </div>
           </div>
 
           {/* Recent Activity & Stats */}
@@ -79,14 +102,14 @@ export default async function LeetCodePage() {
                 </div>
                 <div className="text-center">
                   <div className="text-2xl font-bold text-green-600">
-                    {userProgress.filter((attempt: any) => attempt.completed).length}
+                    {userProgress.filter((attempt) => attempt.completed).length}
                   </div>
                   <div className="text-sm text-gray-600">Completed</div>
                 </div>
                 <div className="text-center">
                   <div className="text-2xl font-bold text-purple-600">
                     {userProgress.length > 0 
-                      ? Math.round(userProgress.reduce((sum: number, attempt: any) => sum + attempt.score, 0) / userProgress.length)
+                      ? Math.round(userProgress.reduce((sum, attempt) => sum + attempt.score, 0) / userProgress.length)
                       : 0}%
                   </div>
                   <div className="text-sm text-gray-600">Average Score</div>
@@ -99,7 +122,7 @@ export default async function LeetCodePage() {
               <h2 className="text-xl font-semibold text-gray-900 mb-4">Recent Attempts</h2>
               {userProgress.length > 0 ? (
                 <div className="space-y-3">
-                  {userProgress.slice(0, 5).map((attempt: any) => (
+                  {userProgress.slice(0, 5).map((attempt) => (
                     <div key={attempt.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                       <div>
                         <h3 className="font-medium text-gray-900">{attempt.quiz?.title || 'Quiz'}</h3>
@@ -126,7 +149,7 @@ export default async function LeetCodePage() {
               <h2 className="text-xl font-semibold text-gray-900 mb-4">Available Quizzes</h2>
               {availableQuizzes.length > 0 ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {availableQuizzes.slice(0, 4).map((quiz: any) => (
+                  {availableQuizzes.slice(0, 4).map((quiz) => (
                     <div key={quiz.id} className="border border-gray-200 rounded-lg p-4">
                       <h3 className="font-medium text-gray-900 mb-2">{quiz.title}</h3>
                       <div className="flex items-center justify-between text-sm text-gray-600">
@@ -165,26 +188,26 @@ export default async function LeetCodePage() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                 </svg>
               </div>
-              <h3 className="font-semibold text-gray-900 mb-2">Editorial Solutions</h3>
-              <p className="text-gray-600">Detailed explanations with multiple solution approaches and code examples</p>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">Editorial System</h3>
+              <p className="text-gray-600">Detailed explanations and multiple solution approaches for each problem</p>
             </div>
             <div className="text-center">
               <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mx-auto mb-4">
                 <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                 </svg>
               </div>
-              <h3 className="font-semibold text-gray-900 mb-2">Custom Quizzes</h3>
-              <p className="text-gray-600">Create quizzes by difficulty level and algorithm category</p>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">Progress Tracking</h3>
+              <p className="text-gray-600">Track your performance and identify areas for improvement</p>
             </div>
             <div className="text-center">
               <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mx-auto mb-4">
                 <svg className="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
                 </svg>
               </div>
-              <h3 className="font-semibold text-gray-900 mb-2">Progress Tracking</h3>
-              <p className="text-gray-600">Monitor your performance with detailed analytics and progress history</p>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">Learning Paths</h3>
+              <p className="text-gray-600">Structured learning paths to master algorithms systematically</p>
             </div>
           </div>
         </div>

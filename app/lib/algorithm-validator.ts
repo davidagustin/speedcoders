@@ -259,7 +259,7 @@ export class AlgorithmValidator {
   }
 
   private calculateAlgorithmComplexity(algorithm: string): number {
-    return ALGORITHM_COMPLEXITY_SCORES[algorithm] || 5;
+    return (ALGORITHM_COMPLEXITY_SCORES as any)[algorithm] || 5;
   }
 
   private analyzeImplementationComplexity(code: string): number {

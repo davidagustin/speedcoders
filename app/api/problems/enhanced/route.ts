@@ -78,7 +78,6 @@ export async function POST(request: Request) {
       filteredProblems = filteredProblems.filter(p =>
         p.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
         p.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        p.category.toLowerCase().includes(searchTerm.toLowerCase()) ||
         p.algorithms.some(algo => algo.toLowerCase().includes(searchTerm.toLowerCase()))
       )
     }

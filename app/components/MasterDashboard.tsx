@@ -21,7 +21,8 @@ import AdvancedAnalytics from './AdvancedAnalytics';
 import CompetitiveLeaderboard from './CompetitiveLeaderboard';
 import AdvancedSearch from './AdvancedSearch';
 import AchievementCenter from './AchievementCenter';
-import EditorialQuiz from './EditorialQuiz';
+import SocialHub from './SocialHub';
+import PremiumUpgrade from './PremiumUpgrade';
 
 interface DashboardStats {
   totalSolved: number;
@@ -58,7 +59,7 @@ interface DashboardStats {
   }[];
 }
 
-type ViewType = 'overview' | 'practice' | 'analytics' | 'leaderboard' | 'search' | 'achievements';
+type ViewType = 'overview' | 'practice' | 'analytics' | 'leaderboard' | 'search' | 'achievements' | 'social' | 'premium';
 
 export default function MasterDashboard() {
   const [currentView, setCurrentView] = useState<ViewType>('overview');
@@ -123,7 +124,9 @@ export default function MasterDashboard() {
     { id: 'analytics', name: 'Analytics', icon: ArrowTrendingUpIcon, current: currentView === 'analytics' },
     { id: 'leaderboard', name: 'Leaderboard', icon: TrophyIcon, current: currentView === 'leaderboard' },
     { id: 'search', name: 'Search', icon: MagnifyingGlassIcon, current: currentView === 'search' },
-    { id: 'achievements', name: 'Achievements', icon: StarIcon, current: currentView === 'achievements' }
+    { id: 'achievements', name: 'Achievements', icon: StarIcon, current: currentView === 'achievements' },
+    { id: 'social', name: 'Social', icon: UserGroupIcon, current: currentView === 'social' },
+    { id: 'premium', name: 'Premium', icon: BoltIcon, current: currentView === 'premium' }
   ];
 
   const getDifficultyColor = (difficulty: string) => {
@@ -445,11 +448,18 @@ export default function MasterDashboard() {
           </div>
         )}
 
-        {currentView === 'practice' && <EditorialQuiz />}
+        {currentView === 'practice' && (
+          <div className="text-center p-8">
+            <h2 className="text-2xl font-bold mb-4">Practice Mode</h2>
+            <p className="text-gray-600">Select a quiz or problem to start practicing</p>
+          </div>
+        )}
         {currentView === 'analytics' && <AdvancedAnalytics />}
         {currentView === 'leaderboard' && <CompetitiveLeaderboard />}
         {currentView === 'search' && <AdvancedSearch />}
         {currentView === 'achievements' && <AchievementCenter />}
+        {currentView === 'social' && <SocialHub />}
+        {currentView === 'premium' && <PremiumUpgrade />}
       </div>
     </div>
   );

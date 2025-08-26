@@ -237,7 +237,7 @@ export class CodeExecutor {
   private estimateTimeComplexity(code: string): string {
     // Count nested loops
     const singleLoops = (code.match(/for\s*\(|while\s*\(/g) || []).length;
-    const nestedLoops = (code.match(/for.*for|while.*while|for.*while|while.*for/gs) || []).length;
+    const nestedLoops = (code.match(/for.*for|while.*while|for.*while|while.*for/g) || []).length;
     
     // Check for specific patterns
     if (code.includes('sort(')) return 'O(n log n)';

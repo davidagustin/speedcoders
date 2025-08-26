@@ -11,11 +11,13 @@ import AlgorithmMastery from './components/AlgorithmMastery';
 import StudyPlans from './components/StudyPlans';
 import Leaderboard from './components/Leaderboard';
 import Settings from './components/Settings';
+import Achievements from './components/Achievements';
 
 function App() {
   const [user, setUser] = useState(null);
   const [quizResults, setQuizResults] = useState(null);
   const [theme, setTheme] = useState('light');
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     const savedUser = localStorage.getItem('user');
@@ -43,6 +45,14 @@ function App() {
     setTheme(newTheme);
     localStorage.setItem('theme', newTheme);
     document.documentElement.setAttribute('data-theme', newTheme);
+  };
+
+  const toggleMobileMenu = () => {
+    setMobileMenuOpen(!mobileMenuOpen);
+  };
+
+  const closeMobileMenu = () => {
+    setMobileMenuOpen(false);
   };
 
   return (
@@ -82,6 +92,12 @@ function App() {
               </Link>
               <Link to="/leaderboard" className="nav-link">
                 <span className="nav-icon">🏆</span>Leaderboard
+              </Link>
+              <Link to="/achievements" className="nav-link">
+                <span className="nav-icon">🎖️</span>Achievements
+              </Link>
+              <Link to="/settings" className="nav-link">
+                <span className="nav-icon">⚙️</span>Settings
               </Link>
             </div>
 
@@ -146,7 +162,11 @@ function App() {
             />
             <Route 
               path="/settings" 
-              element={user ? <Settings user={user} /> : <Navigate to="/login" />} 
+              element={user ? <Settings user={user} onUpdateUser={setUser} /> : <Navigate to="/login" />} 
+            />
+            <Route 
+              path="/achievements" 
+              element={user ? <Achievements user={user} /> : <Navigate to="/login" />} 
             />
             <Route path="/" element={<Navigate to={user ? "/dashboard" : "/login"} />} />
           </Routes>

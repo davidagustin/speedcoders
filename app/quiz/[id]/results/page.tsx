@@ -17,9 +17,9 @@ import {
 import { problems as allProblems } from "@/lib/data/problems";
 
 interface QuizResultsProps {
-  params: {
+  params: Promise<{
     id: string;
-  };
+  }>;
 }
 
 export default function QuizResultsPage({ params }: QuizResultsProps) {
@@ -28,16 +28,25 @@ export default function QuizResultsPage({ params }: QuizResultsProps) {
   const [results, setResults] = useState<any>(null);
   const [quiz, setQuiz] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [quizId, setQuizId] = useState<string>('');
 
   useEffect(() => {
-    if (!session) return;
+    const getParams = async () => {
+      const resolvedParams = await params;
+      setQuizId(resolvedParams.id);
+    };
+    getParams();
+  }, [params]);
+
+  useEffect(() => {
+    if (!session || !quizId) return;
 
     const fetchResults = async () => {
       try {
-        const response = await fetch(`/api/quiz/${params.id}/results`);
+        const response = await fetch(`/api/quiz/${quizId}/results`);
         if (response.ok) {
           const data = await response.json();
-          setResults(data.results);
+          setResults(data.results || data);
           setQuiz(data.quiz);
         } else {
           console.error("Failed to fetch results");
@@ -52,7 +61,7 @@ export default function QuizResultsPage({ params }: QuizResultsProps) {
     };
 
     fetchResults();
-  }, [params.id, session, router]);
+  }, [quizId, session, router]);
 
   if (!session) {
     return (
@@ -110,7 +119,7 @@ export default function QuizResultsPage({ params }: QuizResultsProps) {
   };
 
   const problems = quiz.problemIds.map((id: string) => 
-    allProblems.find(p => p.id === id)
+    allProblems.find(p => p.id === parseInt(id))
   ).filter(Boolean);
 
   const ScoreIcon = getScoreIcon(results.scorePercentage);
@@ -184,7 +193,7 @@ export default function QuizResultsPage({ params }: QuizResultsProps) {
           <div className="bg-white rounded-lg shadow-sm p-6">
             <h3 className="text-lg font-semibold text-gray-900 mb-4">Problem Breakdown</h3>
             <div className="space-y-4">
-              {problems.map((problem, index) => {
+              {problems.map((problem: any, index) => {
                 const result = results.problemResults[index];
                 const isCorrect = result?.isCorrect || false;
                 return (

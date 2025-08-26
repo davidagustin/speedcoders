@@ -134,7 +134,7 @@ export default function PlaygroundPage() {
         setOutput(result);
       }
     } catch (error) {
-      setOutput(`Error: ${error.message}`);
+      setOutput(`Error: ${(error as Error).message}`);
     } finally {
       setIsRunning(false);
     }
