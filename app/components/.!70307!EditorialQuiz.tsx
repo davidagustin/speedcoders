@@ -40,7 +40,7 @@ export default function EditorialQuiz({
   onNext,
   timeLeft
 }: EditorialQuizProps) {
-  const [showHint, setShowHint] = useState(false);
+  const [_showHint, _setShowHint] = useState(false);
 
   if (!problem) {
     return (
@@ -53,7 +53,7 @@ export default function EditorialQuiz({
     );
   }
 
-  const formatTime = (seconds: number) => {
+  const _formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
     return `${mins}:${secs.toString().padStart(2, '0')}`;
@@ -68,7 +68,7 @@ export default function EditorialQuiz({
     }
   };
 
-  const handleAlgorithmToggle = (algorithmId: string) => {
+  const _handleAlgorithmToggle = (algorithmId: string) => {
     const newSelected = selectedAlgorithms.includes(algorithmId)
       ? selectedAlgorithms.filter(id => id !== algorithmId)
       : [...selectedAlgorithms, algorithmId];

@@ -2,15 +2,12 @@ import { createClient } from '@/utils/supabase/server'
 import { redirect } from 'next/navigation'
 import ProblemStats from '@/app/components/ProblemStats'
 import LearningPath from '@/app/components/LearningPath'
-import ProblemBrowser from '@/app/components/ProblemBrowser'
+import EnhancedProblemBrowser from '@/app/components/EnhancedProblemBrowser'
 import QuizCreatorWrapper from '@/app/components/QuizCreatorWrapper'
 
 export default async function EnhancedDashboard() {
   const supabase = await createClient()
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
+  const { data: { user }, } = await supabase.auth.getUser()
 
   if (!user) {
     redirect('/auth/login')
@@ -19,100 +16,88 @@ export default async function EnhancedDashboard() {
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Enhanced Dashboard</h1>
-          <p className="text-xl text-gray-600">Your comprehensive LeetCode learning hub</p>
-        </div>
-
-        {/* Main Grid */}
+        <h1 className="text-3xl font-bold text-gray-900 mb-2">Enhanced Dashboard</h1>
+        <p className="text-gray-600 mb-8">Master algorithms with our comprehensive LeetCode-style platform</p>
+        
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Left Column - Quiz Creator & Stats */}
           <div className="lg:col-span-1 space-y-6">
             <QuizCreatorWrapper />
             <ProblemStats />
           </div>
-
-          {/* Right Column - Learning Path & Problem Browser */}
           <div className="lg:col-span-2 space-y-6">
             <LearningPath />
-            <ProblemBrowser onSelectProblems={() => {}} onCreateQuiz={() => {}} />
           </div>
         </div>
 
-        {/* Additional Features Section */}
+        {/* Enhanced Problem Browser Section */}
         <div className="mt-12">
-          <h2 className="text-2xl font-bold text-gray-900 mb-6">Learning Resources</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {/* Algorithm Guide */}
-            <div className="bg-white rounded-lg shadow-md p-6">
-              <div className="flex items-center mb-4">
-                <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center mr-3">
-                  <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                  </svg>
-                </div>
-                <h3 className="text-lg font-semibold text-gray-900">Algorithm Guide</h3>
-              </div>
-              <p className="text-gray-600 mb-4">Learn about different algorithms and their applications in problem-solving.</p>
-              <button className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors">
-                View Guide
-              </button>
-            </div>
+          <EnhancedProblemBrowser 
+            onSelectProblems={(problems) => {
+              console.log('Selected problems:', problems);
+            }}
+            onCreateQuiz={(problems) => {
+              console.log('Creating quiz with problems:', problems);
+            }}
+          />
+        </div>
 
-            {/* Practice Sets */}
-            <div className="bg-white rounded-lg shadow-md p-6">
-              <div className="flex items-center mb-4">
-                <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center mr-3">
-                  <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-                  </svg>
-                </div>
-                <h3 className="text-lg font-semibold text-gray-900">Practice Sets</h3>
+        {/* Additional Features Section */}
+        <div className="mt-12 bg-white rounded-lg shadow-md p-8">
+          <h2 className="text-2xl font-bold text-gray-900 mb-6 text-center">Platform Features</h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="text-center">
+              <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mx-auto mb-4">
+                <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
               </div>
-              <p className="text-gray-600 mb-4">Curated problem sets for different skill levels and topics.</p>
-              <button className="w-full bg-green-600 text-white py-2 px-4 rounded-lg hover:bg-green-700 transition-colors">
-                Browse Sets
-              </button>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">Editorial System</h3>
+              <p className="text-gray-600">Detailed explanations and multiple solution approaches for each problem</p>
             </div>
-
-            {/* Progress Tracking */}
-            <div className="bg-white rounded-lg shadow-md p-6">
-              <div className="flex items-center mb-4">
-                <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center mr-3">
-                  <svg className="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                  </svg>
-                </div>
-                <h3 className="text-lg font-semibold text-gray-900">Progress Tracking</h3>
+            <div className="text-center">
+              <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mx-auto mb-4">
+                <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                </svg>
               </div>
-              <p className="text-gray-600 mb-4">Track your learning progress and identify areas for improvement.</p>
-              <button className="w-full bg-purple-600 text-white py-2 px-4 rounded-lg hover:bg-purple-700 transition-colors">
-                View Progress
-              </button>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">Progress Tracking</h3>
+              <p className="text-gray-600">Track your performance and identify areas for improvement</p>
+            </div>
+            <div className="text-center">
+              <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mx-auto mb-4">
+                <svg className="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                </svg>
+              </div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">Learning Paths</h3>
+              <p className="text-gray-600">Structured learning paths to master algorithms systematically</p>
             </div>
           </div>
         </div>
 
         {/* Quick Actions */}
-        <div className="mt-12 bg-white rounded-lg shadow-md p-6">
-          <h2 className="text-xl font-semibold text-gray-900 mb-4">Quick Actions</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            <button className="p-4 border border-gray-200 rounded-lg hover:border-gray-300 transition-colors text-left">
-              <div className="font-medium text-gray-900">Start Daily Challenge</div>
-              <div className="text-sm text-gray-600">5 random problems</div>
+        <div className="mt-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg shadow-lg p-8 text-white">
+          <h2 className="text-2xl font-bold mb-4 text-center">Quick Actions</h2>
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <button className="bg-white bg-opacity-20 hover:bg-opacity-30 rounded-lg p-4 text-center transition-all">
+              <div className="text-2xl mb-2">⚡</div>
+              <div className="font-semibold">Start Quiz</div>
+              <div className="text-sm opacity-90">Quick practice session</div>
             </button>
-            <button className="p-4 border border-gray-200 rounded-lg hover:border-gray-300 transition-colors text-left">
-              <div className="font-medium text-gray-900">Review Mistakes</div>
-              <div className="text-sm text-gray-600">Learn from errors</div>
+            <button className="bg-white bg-opacity-20 hover:bg-opacity-30 rounded-lg p-4 text-center transition-all">
+              <div className="text-2xl mb-2">🔍</div>
+              <div className="font-semibold">Browse Problems</div>
+              <div className="text-sm opacity-90">Find specific topics</div>
             </button>
-            <button className="p-4 border border-gray-200 rounded-lg hover:border-gray-300 transition-colors text-left">
-              <div className="font-medium text-gray-900">Study Mode</div>
-              <div className="text-sm text-gray-600">No time pressure</div>
+            <button className="bg-white bg-opacity-20 hover:bg-opacity-30 rounded-lg p-4 text-center transition-all">
+              <div className="text-2xl mb-2">📊</div>
+              <div className="font-semibold">View Analytics</div>
+              <div className="text-sm opacity-90">Track your progress</div>
             </button>
-            <button className="p-4 border border-gray-200 rounded-lg hover:border-gray-300 transition-colors text-left">
-              <div className="font-medium text-gray-900">Competition</div>
-              <div className="text-sm text-gray-600">Race against time</div>
+            <button className="bg-white bg-opacity-20 hover:bg-opacity-30 rounded-lg p-4 text-center transition-all">
+              <div className="text-2xl mb-2">📚</div>
+              <div className="font-semibold">Study Plans</div>
+              <div className="text-sm opacity-90">Structured learning</div>
             </button>
           </div>
         </div>

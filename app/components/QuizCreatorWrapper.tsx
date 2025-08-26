@@ -1,50 +1,45 @@
-'use client'
+"use client";
 
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
-import QuizCreator from './QuizCreator'
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+import QuizCreator from "./QuizCreator";
 
 export default function QuizCreatorWrapper() {
-  const [isLoading, setIsLoading] = useState(false)
-  const router = useRouter()
+	const [isLoading, setIsLoading] = useState(false);
+	const router = useRouter();
 
-  const handleCreateQuiz = async (config: {
-    problemCount: number
-    difficulty: string
-    category: string | null
-  }) => {
-    setIsLoading(true)
-    try {
-      const response = await fetch('/api/quiz/start', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          userId: 'current-user',
-          problemCount: config.problemCount,
-          difficulty: config.difficulty,
-          category: config.category
-        }),
-      })
+	const handleCreateQuiz = async (config: {
+		problemCount: number;
+		difficulty: string;
+		category: string | null;
+	}) => {
+		setIsLoading(true);
+		try {
+			const response = await fetch("/api/quiz/start", {
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json",
+				},
+				body: JSON.stringify({
+					userId: "current-user",
+					problemCount: config.problemCount,
+					difficulty: config.difficulty,
+					category: config.category,
+				}),
+			});
 
-      if (response.ok) {
-        const data = await response.json()
-        router.push(`/quiz/${data.attempt.quiz.id}`)
-      } else {
-        console.error('Failed to create quiz')
-      }
-    } catch (error) {
-      console.error('Error creating quiz:', error)
-    } finally {
-      setIsLoading(false)
-    }
-  }
+			if (response.ok) {
+				const data = await response.json();
+				router.push(`/quiz/${data.attempt.quiz.id}`);
+			} else {
+				console.error("Failed to create quiz");
+			}
+		} catch (error) {
+			console.error("Error creating quiz:", error);
+		} finally {
+			setIsLoading(false);
+		}
+	};
 
-  return (
-    <QuizCreator
-      onCreateQuiz={handleCreateQuiz}
-      isLoading={isLoading}
-    />
-  )
+	return <QuizCreator onCreateQuiz={handleCreateQuiz} isLoading={isLoading} />;
 }

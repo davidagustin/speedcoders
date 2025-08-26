@@ -1,185 +1,148 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/utils/supabase/server'
+import { NextRequest, NextResponse } from 'next/server';
+import { DatabaseService } from '@/lib/services/database';
 
 export async function POST(request: NextRequest) {
-  try {
-    const supabase = await createClient()
-    
-    // Check if quizzes already exist
-    const { data: existingQuizzes } = await supabase
-      .from('quizzes')
-      .select('title')
-      .limit(1)
-    
-    if (existingQuizzes && existingQuizzes.length > 0) {
-      return NextResponse.json({ 
-        message: 'Quizzes already exist in database',
-        count: existingQuizzes.length 
-      })
-    }
+	try {
+		// Create sample quizzes
+		const quizzes = [
+			{
+				title: "Array Fundamentals",
+				description: "Master basic array operations and common patterns",
+				timeLimit: 15,
+				difficulty: "Easy",
+				category: "Array",
+				createdBy: "system"
+			},
+			{
+				title: "String Manipulation",
+				description: "Learn string processing techniques and algorithms",
+				timeLimit: 20,
+				difficulty: "Medium",
+				category: "String",
+				createdBy: "system"
+			},
+			{
+				title: "Linked List Basics",
+				description: "Practice linked list operations and traversal",
+				timeLimit: 18,
+				difficulty: "Medium",
+				category: "Linked List",
+				createdBy: "system"
+			},
+			{
+				title: "Dynamic Programming Intro",
+				description: "Introduction to dynamic programming concepts",
+				timeLimit: 25,
+				difficulty: "Hard",
+				category: "Dynamic Programming",
+				createdBy: "system"
+			},
+			{
+				title: "Tree Traversal",
+				description: "Master tree data structure traversal techniques",
+				timeLimit: 22,
+				difficulty: "Medium",
+				category: "Tree",
+				createdBy: "system"
+			}
+		];
 
-    // Get all problems and algorithms for quiz creation
-    const { data: problems } = await supabase
-      .from('problems')
-      .select('id, title, difficulty, category')
-      .order('difficulty')
-      .order('title')
+		const createdQuizzes = [];
+		for (const quiz of quizzes) {
+			const createdQuiz = await DatabaseService.createQuiz(quiz);
+			createdQuizzes.push(createdQuiz);
+		}
 
-    const { data: algorithms } = await supabase
-      .from('algorithms')
-      .select('id, name, category')
-      .order('name')
+		// Get problems to create quiz questions
+		const problems = await DatabaseService.getProblems();
+		
+		if (problems.length > 0) {
+			// Create quiz questions for each quiz
+			const quizQuestions: Array<{
+				quizId: string;
+				problemId: number;
+				order: number;
+			}> = [];
 
-    if (!problems || !algorithms) {
-      return NextResponse.json({ error: 'Failed to fetch problems or algorithms' }, { status: 500 })
-    }
+			// Array Fundamentals Quiz
+			const arrayProblems = problems
+				.filter(p => p.category === "Array" && p.difficulty === "Easy")
+				.slice(0, 3);
+			arrayProblems.forEach((problem, index) => {
+				quizQuestions.push({
+					quizId: createdQuizzes[0]?.id || "1",
+					problemId: problem.id,
+					order: index + 1
+				});
+			});
 
-    // Create quizzes
-    const quizzes = [
-      {
-        title: "Array Fundamentals",
-        description: "Master basic array operations and common patterns",
-        timeLimit: 15,
-        difficulty: "Easy",
-        category: "Array",
-        createdBy: "system"
-      },
-      {
-        title: "String Manipulation",
-        description: "Learn string processing techniques and algorithms",
-        timeLimit: 20,
-        difficulty: "Medium",
-        category: "String",
-        createdBy: "system"
-      },
-      {
-        title: "Linked List Basics",
-        description: "Practice linked list operations and traversal",
-        timeLimit: 18,
-        difficulty: "Medium",
-        category: "Linked List",
-        createdBy: "system"
-      },
-      {
-        title: "Advanced Array Problems",
-        description: "Tackle complex array problems with multiple techniques",
-        timeLimit: 25,
-        difficulty: "Hard",
-        category: "Array",
-        createdBy: "system"
-      },
-      {
-        title: "Data Structures Mix",
-        description: "Mixed problems covering various data structures",
-        timeLimit: 30,
-        difficulty: "Mixed",
-        category: null,
-        createdBy: "system"
-      },
-      {
-        title: "Algorithm Techniques",
-        description: "Practice different algorithmic techniques",
-        timeLimit: 22,
-        difficulty: "Medium",
-        category: null,
-        createdBy: "system"
-      }
-    ]
+			// String Manipulation Quiz
+			const stringProblems = problems
+				.filter(p => p.category === "String")
+				.slice(0, 3);
+			stringProblems.forEach((problem, index) => {
+				quizQuestions.push({
+					quizId: createdQuizzes[1]?.id || "2",
+					problemId: problem.id,
+					order: index + 1
+				});
+			});
 
-    // Insert quizzes
-    const { data: quizData, error: quizError } = await supabase
-      .from('quizzes')
-      .insert(quizzes)
-      .select()
+			// Linked List Basics Quiz
+			const linkedListProblems = problems
+				.filter(p => p.category === "Linked List")
+				.slice(0, 2);
+			linkedListProblems.forEach((problem, index) => {
+				quizQuestions.push({
+					quizId: createdQuizzes[2]?.id || "3",
+					problemId: problem.id,
+					order: index + 1
+				});
+			});
 
-    if (quizError) {
-      console.error('Error seeding quizzes:', quizError)
-      return NextResponse.json({ error: quizError.message }, { status: 500 })
-    }
+			// Dynamic Programming Quiz
+			const dpProblems = problems
+				.filter(p => p.category === "Dynamic Programming" || p.difficulty === "Hard")
+				.slice(0, 2);
+			dpProblems.forEach((problem, index) => {
+				quizQuestions.push({
+					quizId: createdQuizzes[3]?.id || "4",
+					problemId: problem.id,
+					order: index + 1
+				});
+			});
 
-    // Create quiz questions
-    const quizQuestions = []
+			// Tree Traversal Quiz
+			const treeProblems = problems
+				.filter(p => p.category === "Tree")
+				.slice(0, 2);
+			treeProblems.forEach((problem, index) => {
+				quizQuestions.push({
+					quizId: createdQuizzes[4]?.id || "5",
+					problemId: problem.id,
+					order: index + 1
+				});
+			});
 
-    // Array Fundamentals Quiz
-    const arrayProblems = problems.filter(p => p.category === 'Array' && p.difficulty === 'Easy').slice(0, 3)
-    arrayProblems.forEach((problem, index) => {
-      quizQuestions.push({
-        quizId: quizData[0].id,
-        problemId: problem.id,
-        order: index + 1
-      })
-    })
+			// Create quiz questions in database
+			for (const question of quizQuestions) {
+				await DatabaseService.createQuizQuestion(question);
+			}
+		}
 
-    // String Manipulation Quiz
-    const stringProblems = problems.filter(p => p.category === 'String').slice(0, 3)
-    stringProblems.forEach((problem, index) => {
-      quizQuestions.push({
-        quizId: quizData[1].id,
-        problemId: problem.id,
-        order: index + 1
-      })
-    })
+		return NextResponse.json({
+			success: true,
+			message: "Quizzes seeded successfully",
+			quizzesCreated: createdQuizzes.length,
+			questionsCreated: problems.length > 0 ? "Quiz questions created" : "No problems available for questions"
+		});
 
-    // Linked List Basics Quiz
-    const linkedListProblems = problems.filter(p => p.category === 'Linked List').slice(0, 3)
-    linkedListProblems.forEach((problem, index) => {
-      quizQuestions.push({
-        quizId: quizData[2].id,
-        problemId: problem.id,
-        order: index + 1
-      })
-    })
-
-    // Advanced Array Problems Quiz
-    const advancedArrayProblems = problems.filter(p => p.category === 'Array' && p.difficulty === 'Hard').slice(0, 3)
-    advancedArrayProblems.forEach((problem, index) => {
-      quizQuestions.push({
-        quizId: quizData[3].id,
-        problemId: problem.id,
-        order: index + 1
-      })
-    })
-
-    // Data Structures Mix Quiz
-    const mixedProblems = problems.slice(0, 4)
-    mixedProblems.forEach((problem, index) => {
-      quizQuestions.push({
-        quizId: quizData[4].id,
-        problemId: problem.id,
-        order: index + 1
-      })
-    })
-
-    // Algorithm Techniques Quiz
-    const techniqueProblems = problems.filter(p => ['Medium', 'Hard'].includes(p.difficulty)).slice(0, 4)
-    techniqueProblems.forEach((problem, index) => {
-      quizQuestions.push({
-        quizId: quizData[5].id,
-        problemId: problem.id,
-        order: index + 1
-      })
-    })
-
-    // Insert quiz questions
-    const { error: questionError } = await supabase
-      .from('quiz_questions')
-      .insert(quizQuestions)
-
-    if (questionError) {
-      console.error('Error seeding quiz questions:', questionError)
-      return NextResponse.json({ error: questionError.message }, { status: 500 })
-    }
-
-    return NextResponse.json({ 
-      message: 'Quizzes and questions seeded successfully',
-      quizzesCount: quizData.length,
-      questionsCount: quizQuestions.length
-    })
-  } catch (error) {
-    console.error('Error in seed quizzes route:', error)
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
-  }
+	} catch (error) {
+		console.error("Error seeding quizzes:", error);
+		return NextResponse.json({
+			success: false,
+			message: "Failed to seed quizzes",
+			error: error instanceof Error ? error.message : "Unknown error"
+		}, { status: 500 });
+	}
 }
