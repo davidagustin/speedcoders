@@ -1,0 +1,244 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String    @unique
+  emailVerified DateTime?
+  image         String?
+  password      String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  accounts Account[]
+  sessions Session[]
+  quizzes  Quiz[]
+  quizAttempts QuizAttempt[]
+  studyGoals StudyGoal[]
+  studySessions StudySession[]
+  pathProgress PathProgress[]
+  achievements Achievement[]
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+model Problem {
+  id          Int      @id @default(autoincrement())
+  title       String   @unique
+  difficulty  String   // Easy, Medium, Hard
+  category    String   // Array, String, Tree, etc.
+  description String
+  examples    String   // JSON string of examples
+  constraints String   // JSON string of constraints
+  solutions   String   // JSON string of solution approaches
+  leetcodeUrl String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  quizQuestions QuizQuestion[]
+}
+
+model Quiz {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  timeLimit   Int      // in minutes
+  difficulty  String   // Easy, Medium, Hard, Mixed
+  category    String?  // Optional category filter
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  createdBy   String
+  user        User     @relation(fields: [createdBy], references: [id], onDelete: Cascade)
+
+  questions   QuizQuestion[]
+  attempts    QuizAttempt[]
+}
+
+model QuizQuestion {
+  id        String   @id @default(cuid())
+  quizId    String
+  problemId Int
+  order     Int
+  quiz      Quiz     @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  problem   Problem  @relation(fields: [problemId], references: [id], onDelete: Cascade)
+  answers   QuizAnswer[]
+
+  @@unique([quizId, order])
+}
+
+model QuizAttempt {
+  id        String   @id @default(cuid())
+  quizId    String
+  userId    String
+  score     Int
+  timeSpent Int      // in seconds
+  completed Boolean  @default(false)
+  startedAt DateTime @default(now())
+  completedAt DateTime?
+  quiz      Quiz     @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  answers   QuizAnswer[]
+}
+
+model QuizAnswer {
+  id            String      @id @default(cuid())
+  attemptId     String
+  questionId    String
+  selectedAlgorithms String // JSON array of selected algorithm names
+  isCorrect     Boolean
+  timeSpent     Int         // in seconds
+  attempt       QuizAttempt @relation(fields: [attemptId], references: [id], onDelete: Cascade)
+  question      QuizQuestion @relation(fields: [questionId], references: [id], onDelete: Cascade)
+}
+
+model Algorithm {
+  id              String   @id @default(cuid())
+  name            String   @unique
+  category        String
+  description     String
+  timeComplexity  String
+  spaceComplexity String
+  examples        String   // JSON string of examples
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model StudyGoal {
+  id          String   @id @default(cuid())
+  userId      String
+  title       String
+  description String?
+  targetDate  DateTime?
+  category    String   // leetcode, regex, frontend, etc.
+  difficulty  String   // easy, medium, hard
+  targetCount Int      // number of problems to solve
+  completedCount Int   @default(0)
+  isCompleted Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model StudySession {
+  id          String   @id @default(cuid())
+  userId      String
+  title       String
+  description String?
+  startTime   DateTime @default(now())
+  endTime     DateTime?
+  duration    Int?     // in minutes
+  category    String   // leetcode, regex, frontend, etc.
+  problemsSolved Int   @default(0)
+  score       Int?
+  notes       String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model LearningPath {
+  id          String   @id @default(cuid())
+  title       String
+  description String
+  category    String   // beginner, intermediate, advanced
+  difficulty  String   // easy, medium, hard
+  duration    Int      // estimated hours
+  topics      String   // JSON string of topics
+  prerequisites String? // JSON string of prerequisites
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  progress PathProgress[]
+}
+
+model PathProgress {
+  id            String   @id @default(cuid())
+  userId        String
+  pathId        String
+  currentStep   Int      @default(0)
+  totalSteps    Int
+  completedSteps Int     @default(0)
+  isCompleted   Boolean  @default(false)
+  startedAt     DateTime @default(now())
+  completedAt   DateTime?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  path LearningPath @relation(fields: [pathId], references: [id], onDelete: Cascade)
+}
+
+model Achievement {
+  id          String   @id @default(cuid())
+  userId      String
+  title       String
+  description String
+  category    String   // quiz, study, streak, etc.
+  icon        String   // emoji or icon name
+  unlockedAt  DateTime @default(now())
+  createdAt   DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model SystemDesign {
+  id          String   @id @default(cuid())
+  title       String
+  description String
+  category    String   // scalability, caching, etc.
+  difficulty  String   // easy, medium, hard
+  requirements String  // JSON string of requirements
+  solutions   String   // JSON string of solutions
+  resources   String   // JSON string of resources
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}

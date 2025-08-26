@@ -1,6 +1,8 @@
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
-# dependencies
+# =============================================================================
+# DEPENDENCIES
+# =============================================================================
 /node_modules
 /.pnp
 .pnp.*
@@ -10,32 +12,238 @@
 !.yarn/releases
 !.yarn/versions
 
-# testing
+# =============================================================================
+# TESTING
+# =============================================================================
 /coverage
+*.lcov
+.nyc_output
 
-# next.js
+# =============================================================================
+# NEXT.JS
+# =============================================================================
 /.next/
 /out/
+.next/
+next-env.d.ts
 
-# production
+# =============================================================================
+# PRODUCTION
+# =============================================================================
 /build
+/dist
 
-# misc
-.DS_Store
-*.pem
+# =============================================================================
+# ENVIRONMENT VARIABLES & SECRETS
+# =============================================================================
+# Environment files (contains sensitive API keys, database URLs, etc.)
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+.env*.local
 
-# debug
+# =============================================================================
+# DATABASE & CACHE
+# =============================================================================
+# Prisma generated files
+/app/generated/prisma
+/prisma/migrations/
+*.db
+*.sqlite
+*.sqlite3
+
+# Redis dump files
+dump.rdb
+*.rdb
+
+# =============================================================================
+# BROWSER PROFILES & AUTOMATION
+# =============================================================================
+# Chrome/Chromium profiles (contains sensitive session data, cookies, etc.)
+/chrome-profile/
+/chrome-profile-*/
+/headless-chrome/
+*.user-data-dir
+
+# Puppeteer/Playwright data
+.puppeteer/
+.playwright/
+
+# =============================================================================
+# LOGS & DEBUG FILES
+# =============================================================================
+# Application logs
+*.log
+*.log.*
+logs/
+log/
+
+# Debug files
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
+lerna-debug.log*
 
-# env files (can opt-in for committing if needed)
-.env*
+# Runtime logs
+*.pid
+*.seed
+*.pid.lock
 
-# vercel
+# =============================================================================
+# CERTIFICATES & KEYS
+# =============================================================================
+# SSL/TLS certificates
+*.pem
+*.key
+*.crt
+*.csr
+*.p12
+*.pfx
+
+# SSH keys
+id_rsa
+id_rsa.pub
+id_ed25519
+id_ed25519.pub
+
+# =============================================================================
+# OPERATING SYSTEM
+# =============================================================================
+# macOS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+*.cab
+*.msi
+*.msix
+*.msm
+*.msp
+*.lnk
+
+# Linux
+*~
+.fuse_hidden*
+.directory
+.Trash-*
+.nfs*
+
+# =============================================================================
+# EDITORS & IDEs
+# =============================================================================
+# VSCode
+.vscode/
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+
+# JetBrains IDEs
+.idea/
+*.iml
+*.ipr
+*.iws
+
+# Vim
+*.swp
+*.swo
+*~
+
+# Emacs
+*~
+\#*\#
+/.emacs.desktop
+/.emacs.desktop.lock
+*.elc
+auto-save-list
+tramp
+.\#*
+
+# =============================================================================
+# DEPLOYMENT & CLOUD
+# =============================================================================
+# Vercel
 .vercel
 
-# typescript
+# Netlify
+.netlify
+
+# AWS
+.aws/
+
+# =============================================================================
+# TEMPORARY FILES
+# =============================================================================
+# Temporary files
+*.tmp
+*.temp
+.tmp/
+.temp/
+
+# Cache directories
+.cache/
+.parcel-cache/
+.eslintcache
+.stylelintcache
+
+# =============================================================================
+# TYPESCRIPT
+# =============================================================================
 *.tsbuildinfo
-next-env.d.ts
+
+# =============================================================================
+# SCRAPING & DATA COLLECTION
+# =============================================================================
+# Scraped data directories
+/leetcode-data/
+/scraped-data/
+/data-export/
+
+# Browser automation artifacts
+/screenshots/
+/downloads/
+/automation-logs/
+
+# =============================================================================
+# AUDIO & MEDIA FILES
+# =============================================================================
+# Notification sounds and media
+*.mp3
+*.wav
+*.ogg
+*.m4a
+*.aac
+
+# =============================================================================
+# BACKUP FILES
+# =============================================================================
+*.bak
+*.backup
+*.old
+*.orig
+
+# =============================================================================
+# MONITORING & ANALYTICS
+# =============================================================================
+# Application monitoring
+.sentryclirc
+.sentry/
+
+# =============================================================================
+# LOCAL DEVELOPMENT
+# =============================================================================
+# Local development files
+.local/
+local/
